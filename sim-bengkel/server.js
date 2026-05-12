@@ -7,12 +7,15 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 3000;
+// PERUBAHAN KRUSIAL 1: Port dinamis untuk Railway
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'simbengkel-ultra-secret-key-2024';
 const DB_PATH = './simbengkel.db';
 
 app.use(cors());
 app.use(express.json());
+
+// PERUBAHAN KRUSIAL 2: Memastikan folder public terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
@@ -241,17 +244,22 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
   res.json(all("SELECT id,name,email,role,vehicle_type,created_at FROM users ORDER BY created_at DESC", []));
 });
 
-// ─── HTML PAGES ───────────────────────────────────────────────────────────────
-[['/', 'index'], ['/login','login'], ['/register','register'], ['/dashboard','dashboard'], ['/admin','admin']].forEach(([route, file]) => {
+// ─── HTML PAGES (PERUBAHAN KRUSIAL 3: Routing ke folder public) ───────────────
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+[['/login','login'], ['/register','register'], ['/dashboard','dashboard'], ['/admin','admin']].forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 initDb().then(() => {
-  app.listen(PORT, () => {
+  // PERUBAHAN KRUSIAL 4: Menambahkan '0.0.0.0' agar diterima oleh Railway/Cloud
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n╔══════════════════════════════════════╗`);
     console.log(`║   🚀 SIM-Bengkel Running             ║`);
-    console.log(`║   http://localhost:${PORT}              ║`);
+    console.log(`║   Port: ${PORT}                      ║`);
     console.log(`╠══════════════════════════════════════╣`);
     console.log(`║   Admin : admin@simbengkel.com       ║`);
     console.log(`║   Pass  : admin123                   ║`);
