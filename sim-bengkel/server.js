@@ -7,15 +7,12 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-// PERUBAHAN KRUSIAL 1: Port dinamis untuk Railway
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'simbengkel-ultra-secret-key-2024';
 const DB_PATH = './simbengkel.db';
 
 app.use(cors());
 app.use(express.json());
-
-// PERUBAHAN KRUSIAL 2: Memastikan folder public terbaca
 app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
@@ -59,6 +56,9 @@ async function initDb() {
   db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'pelanggan', vehicle_type TEXT, last_oil_change DATE, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, brand TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'pending', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+  
+  // TABEL BARU UNTUK FITUR CUCI MOBIL
+  db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
   if (!get("SELECT id FROM users WHERE role='admin'")) {
     const hash = bcrypt.hashSync('admin123', 10);
@@ -67,24 +67,28 @@ async function initDb() {
     console.log('✅ Admin seeded');
   }
 
+  // UPDATE DATA PRODUK DENGAN GAMBAR ASLI & AKSESORIS BARU
   if (!get("SELECT id FROM products LIMIT 1")) {
     const now = new Date().toISOString();
     const P = [
-      ['Oli Mesin Fastron Techno 10W-40','Oli Mesin',85000,150,'Oli sintetik penuh performa tinggi untuk kendaraan modern.','🛢️','Pertamina'],
-      ['Kampas Rem Depan TDW','Rem',125000,80,'Kampas rem premium daya cengkram tinggi, tahan panas.','🔧','TDW'],
-      ['Minyak Rem DOT 4 AHM','Rem',45000,200,'Minyak rem titik didih tinggi untuk performa optimal.','💧','AHM'],
-      ['Filter Udara K&N Universal','Filter',320000,40,'Filter udara high-performance, dapat dicuci ulang.','🌬️','K&N'],
-      ['Busi NGK Iridium BPR6EIX','Busi',95000,120,'Busi iridium pembakaran sempurna, efisiensi bahan bakar.','⚡','NGK'],
-      ['Aki Kering GS Astra MF 35Ah','Aki',650000,30,'Aki maintenance-free teknologi terkini, tahan lama.','🔋','GS Astra'],
-      ['Fan Belt Gates Optibelt','Belt',180000,60,'Fan belt premium tahan panas untuk mesin tetap optimal.','⚙️','Gates'],
-      ['Shock Absorber Kayaba Excel-G','Suspensi',750000,25,'Shock absorber gas untuk kenyamanan dan handling superior.','🚗','Kayaba'],
-      ['Kampas Rem Belakang TDW','Rem',95000,90,'Kampas rem belakang premium, aus merata dan konsisten.','🔩','TDW'],
-      ['Filter Oli WIX Filters','Filter',55000,180,'Filter oli berkualitas untuk menjaga kebersihan mesin.','🔄','WIX'],
-      ['Oli Transmisi Matic Shell','Oli Transmisi',120000,70,'Oli transmisi otomatis untuk perpindahan gigi mulus.','🛢️','Shell'],
-      ['Lampu LED H4 Philips Ultinon','Lampu',450000,50,'Lampu LED 6000K, 3x lebih terang dari halogen standar.','💡','Philips'],
+      ['Oli Mesin Fastron Techno 10W-40','Oli Mesin',85000,150,'Oli sintetik penuh performa tinggi untuk kendaraan modern.','https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80','Pertamina'],
+      ['Kampas Rem Depan TDW','Rem',125000,80,'Kampas rem premium daya cengkram tinggi, tahan panas.','https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&q=80','TDW'],
+      ['Minyak Rem DOT 4 AHM','Rem',45000,200,'Minyak rem titik didih tinggi untuk performa optimal.','https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80','AHM'],
+      ['Filter Udara K&N Universal','Filter',320000,40,'Filter udara high-performance, dapat dicuci ulang.','https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80','K&N'],
+      ['Busi NGK Iridium BPR6EIX','Busi',95000,120,'Busi iridium pembakaran sempurna, efisiensi bahan bakar.','https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80','NGK'],
+      ['Aki Kering GS Astra MF 35Ah','Aki',650000,30,'Aki maintenance-free teknologi terkini, tahan lama.','https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80','GS Astra'],
+      ['Fan Belt Gates Optibelt','Belt',180000,60,'Fan belt premium tahan panas untuk mesin tetap optimal.','https://images.unsplash.com/photo-1635783637158-b196c80cb184?w=400&q=80','Gates'],
+      ['Shock Absorber Kayaba Excel-G','Suspensi',750000,25,'Shock absorber gas untuk kenyamanan dan handling superior.','https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400&q=80','Kayaba'],
+      
+      // PRODUK AKSESORIS TAMBAHAN
+      ['Jok Mobil Kulit Sintetis MBtech','Aksesoris',1200000,15,'Sarung jok mobil bahan kulit sintetis premium MBtech, nyaman dan tahan lama.','https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=400&q=80','MBtech'],
+      ['Karpet Dasar Mobil 5D Presisi','Aksesoris',450000,25,'Karpet dasar 5D presisi, anti air, mudah dibersihkan dan membuat kabin senyap.','https://images.unsplash.com/photo-1605810731671-893bdac8f359?w=400&q=80','OtoMat'],
+      ['Kaca Film 3M Black Beauty','Aksesoris',1500000,10,'Kaca film 3M tolak panas maksimal, garansi 5 tahun pemasangan full body.','https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&q=80','3M'],
+      ['Parfum Mobil Stella Apel','Aksesoris',35000,100,'Pewangi kabin mobil aroma apel segar tahan hingga 30 hari pemakaian.','https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=400&q=80','Stella'],
+      ['Lampu LED Headlight H4 Philips','Lampu',450000,30,'Lampu LED putih bersih 6000K, 3x lebih terang dan tembus kabut.','https://images.unsplash.com/photo-1541443131876-44b03de101c5?w=400&q=80','Philips'],
     ];
     for (const p of P) db.run("INSERT INTO products (name,category,price,stock,description,image_url,brand,created_at) VALUES (?,?,?,?,?,?,?,?)", [...p, now]);
-    console.log('✅ 12 products seeded');
+    console.log('✅ Products seeded with images and accessories');
   }
 
   saveDb();
@@ -147,12 +151,12 @@ app.get('/api/products', (req, res) => {
 });
 
 app.post('/api/products', adminMiddleware, (req, res) => {
-  const { name, category, price, stock, description, brand } = req.body;
+  const { name, category, price, stock, description, brand, image_url } = req.body;
   if (!name || !price) return res.status(400).json({ error: 'Nama dan harga wajib diisi' });
   try {
     const now = new Date().toISOString();
     run("INSERT INTO products (name,category,price,stock,description,brand,image_url,created_at) VALUES (?,?,?,?,?,?,?,?)",
-      [name,category,+price,+stock||0,description||'',brand||'','🔧',now]);
+      [name,category,+price,+stock||0,description||'',brand||'',image_url||'https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80',now]);
     res.json(get("SELECT * FROM products WHERE name=? ORDER BY id DESC LIMIT 1", [name]));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -195,6 +199,29 @@ app.get('/api/transactions/my', authMiddleware, (req, res) => {
 
 app.get('/api/transactions/all', adminMiddleware, (req, res) => {
   res.json(all(`SELECT t.id,t.quantity,t.total_price,t.status,t.created_at,p.name as product_name,u.name as user_name,u.email FROM transactions t JOIN products p ON t.product_id=p.id JOIN users u ON t.user_id=u.id ORDER BY t.created_at DESC LIMIT 50`, []));
+});
+
+// ─── CUCI MOBIL QUEUE ─────────────────────────────────────────────────────────
+app.post('/api/queues', authMiddleware, (req, res) => {
+  const { service_type } = req.body;
+  if (!service_type) return res.status(400).json({ error: 'Jenis layanan wajib diisi' });
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const countRow = get("SELECT COUNT(*) as c FROM queues WHERE date(created_at) = ?", [today]);
+    const queueNumber = (countRow ? countRow.c : 0) + 1;
+
+    const now = new Date().toISOString();
+    run("INSERT INTO queues (user_id, service_type, queue_number, status, created_at) VALUES (?, ?, ?, 'menunggu', ?)",
+      [req.user.id, service_type, queueNumber, now]);
+    
+    const newQueue = get("SELECT * FROM queues WHERE user_id=? ORDER BY id DESC LIMIT 1", [req.user.id]);
+    res.json({ success: true, queue: newQueue });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/queues/my', authMiddleware, (req, res) => {
+  res.json(all("SELECT * FROM queues WHERE user_id=? ORDER BY created_at DESC", [req.user.id]));
 });
 
 // ─── AI RECOMMENDATIONS ───────────────────────────────────────────────────────
@@ -244,7 +271,7 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
   res.json(all("SELECT id,name,email,role,vehicle_type,created_at FROM users ORDER BY created_at DESC", []));
 });
 
-// ─── HTML PAGES (PERUBAHAN KRUSIAL 3: Routing ke folder public) ───────────────
+// ─── HTML PAGES ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -255,7 +282,6 @@ app.get('/', (req, res) => {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 initDb().then(() => {
-  // PERUBAHAN KRUSIAL 4: Menambahkan '0.0.0.0' agar diterima oleh Railway/Cloud
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n╔══════════════════════════════════════╗`);
     console.log(`║   🚀 SIM-Bengkel Running             ║`);
