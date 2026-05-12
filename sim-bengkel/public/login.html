@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk — SIM-Bengkel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --navy: #0a0f1e;
+      --navy-2: #0d1526;
+      --navy-3: #111d35;
+      --blue: #1a6cff;
+      --blue-glow: #3a8bff;
+      --purple: #8b5cf6;
+      --magenta: #d946ef;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+    }
+    h1, h2, h3, .brand { font-family: 'Syne', sans-serif; }
+
+    /* SPLIT SCREEN */
+    .left-panel {
+      width: 45%;
+      background: linear-gradient(145deg, #0d1526 0%, #111d35 50%, #0f1829 100%);
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 50%, rgba(26,108,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139,92,246,0.08) 0%, transparent 50%);
+    }
+    .left-panel .grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .left-content { position: relative; z-index: 1; }
+    .brand-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 3rem;
+      display: block;
+      text-decoration: none;
+    }
+    .left-heading {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      color: #f1f5f9;
+      margin-bottom: 1rem;
+    }
+    .left-heading span {
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .left-sub { color: #64748b; font-size: 1rem; line-height: 1.6; margin-bottom: 2.5rem; }
+    .feature-list { display: flex; flex-direction: column; gap: 0.85rem; }
+    .feature-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 0.9rem; color: #94a3b8;
+    }
+    .feature-icon {
+      width: 32px; height: 32px;
+      background: rgba(26,108,255,0.15);
+      border: 1px solid rgba(26,108,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    /* DECORATIVE CARDS */
+    .deco-cards { margin-top: 3rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .deco-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      animation: float 4s ease-in-out infinite;
+    }
+    .deco-card:nth-child(2) { margin-left: 1.5rem; animation-delay: -2s; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .deco-emoji { font-size: 1.4rem; }
+    .deco-label { font-size: 0.72rem; color: #475569; }
+    .deco-val { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; color: #cbd5e1; }
+    .ai-badge {
+      margin-left: auto;
+      background: linear-gradient(135deg, #8b5cf6, #d946ef);
+      padding: 0.15rem 0.55rem;
+      border-radius: 100px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 4rem;
+      background: var(--navy);
+    }
+    .form-container { width: 100%; max-width: 400px; }
+    .form-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; color: #f1f5f9; margin-bottom: 0.4rem; }
+    .form-sub { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+    .form-sub a { color: #60a5fa; text-decoration: none; }
+    .form-sub a:hover { color: #93c5fd; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 500; color: #94a3b8; margin-bottom: 0.4rem; letter-spacing: 0.02em; }
+    .form-input {
+      width: 100%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .form-input::placeholder { color: #334155; }
+    .form-input:focus { border-color: rgba(26,108,255,0.5); background: rgba(26,108,255,0.04); box-shadow: 0 0 0 3px rgba(26,108,255,0.1); }
+    .form-input.error { border-color: rgba(239,68,68,0.5); }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: 'DM Sans', sans-serif;
+      margin-top: 0.5rem;
+      box-shadow: 0 0 30px rgba(26,108,255,0.3);
+    }
+    .btn-submit:hover { background: var(--blue-glow); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(26,108,255,0.4); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: #334155; font-size: 0.8rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+
+    .demo-creds {
+      background: rgba(139,92,246,0.08);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.8rem;
+      color: #a78bfa;
+      margin-top: 1rem;
+    }
+    .demo-creds strong { display: block; color: #c4b5fd; margin-bottom: 0.3rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #fca5a5;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    @media (max-width: 768px) {
+      .left-panel { display: none; }
+      .right-panel { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="grid-bg"></div>
+    <div class="left-content">
+      <a href="/" class="brand-logo">SIM-Bengkel</a>
+      <h1 class="left-heading">Selamat<br>Datang <span>Kembali</span></h1>
+      <p class="left-sub">Masuk untuk mengakses rekomendasi AI personal dan riwayat pembelian spare parts Anda.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">✦</div>
+          Rekomendasi AI berdasarkan riwayat kendaraan
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          Transaksi aman & terenkripsi
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📦</div>
+          Lacak semua pesanan dalam satu dashboard
+        </div>
+      </div>
+      <div class="deco-cards">
+        <div class="deco-card">
+          <div class="deco-emoji">🛢️</div>
+          <div>
+            <div class="deco-label">Rekomendasi untukmu</div>
+            <div class="deco-val">Oli Mesin Fastron</div>
+          </div>
+          <div class="ai-badge">AI</div>
+        </div>
+        <div class="deco-card">
+          <div class="deco-emoji">⚡</div>
+          <div>
+            <div class="deco-label">Beli bersama</div>
+            <div class="deco-val">Busi NGK Iridium</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-container">
+      <div class="form-title">Masuk</div>
+      <div class="form-sub">Belum punya akun? <a href="/register">Daftar gratis →</a></div>
+
+      <div class="error-msg" id="errorMsg">❌ Email atau password salah.</div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="email" placeholder="nama@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" />
+      </div>
+
+      <button class="btn-submit" id="loginBtn" onclick="login()">Masuk →</button>
+
+      <div class="divider">atau coba demo</div>
+
+      <div class="demo-creds">
+        <strong>🔑 Demo Credentials</strong>
+        Admin: admin@simbengkel.com / admin123<br>
+        Pelanggan: daftar akun baru di halaman Register
+      </div>
+
+      <div style="margin-top:1.5rem; text-align:center">
+        <a href="/" style="color:#475569; font-size:0.82rem; text-decoration:none">← Kembali ke Katalog</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    const user = JSON.parse(localStorage.getItem('sb_user') || 'null');
+    if (user) {
+      window.location.href = user.role === 'admin' ? '/admin' : '/dashboard';
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('errorMsg');
+
+      if (!email || !password) { showError('Semua field wajib diisi.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+      err.classList.remove('show');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Login gagal.'); btn.disabled = false; btn.textContent = 'Masuk →'; return; }
+
+        localStorage.setItem('sb_token', data.token);
+        localStorage.setItem('sb_user', JSON.stringify(data.user));
+
+        btn.textContent = '✅ Berhasil!';
+        setTimeout(() => {
+          window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
+        }, 600);
+      } catch {
+        showError('Tidak dapat terhubung ke server. Pastikan server berjalan.');
+        btn.disabled = false; btn.textContent = 'Masuk →';
+      }
+    }
+
+    function showError(msg) {
+      const err = document.getElementById('errorMsg');
+      err.textContent = '❌ ' + msg;
+      err.classList.add('show');
+    }
+  </script>
+</body>
+</html>
