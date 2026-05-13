@@ -63,17 +63,15 @@ async function initDb() {
   db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
-  // ─── FITUR AUTO-MIGRATION (ANTI CRASH) ───
-  // Otomatis nambahin kolom baru kalau di database lama belum ada
+  // FITUR AUTO-MIGRATION (ANTI CRASH)
   try { db.run("SELECT brand FROM products LIMIT 1"); } 
-  catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); console.log("🔧 Migrasi: Kolom brand ditambahkan."); }
+  catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); }
 
   try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } 
   catch {
     db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT");
     db.run("ALTER TABLE transactions ADD COLUMN address TEXT");
     db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT");
-    console.log("🔧 Migrasi: Kolom transaksi baru ditambahkan.");
   }
 
   // SEEDING DATA AWAL (Admin & Produk)
@@ -195,7 +193,6 @@ app.post('/api/transactions', authMiddleware, (req, res) => {
 app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
   const { delivery_method, address, payment_method, extra_fee } = req.body;
   const pendingTxs = all("SELECT * FROM transactions WHERE user_id=? AND status='Tertunda'", [req.user.id]);
-  
   if (pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang belanja kosong.' });
 
   try {
@@ -210,10 +207,8 @@ app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
     for (let tx of pendingTxs) {
        let finalPrice = tx.total_price;
        if (!isFeeApplied) { finalPrice += (extra_fee || 0); isFeeApplied = true; }
-       
        run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?",
          [delivery_method, address, payment_method, finalPrice, tx.id]);
-
        const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
        if (prod.category !== 'Jasa') {
            run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]);
@@ -236,6 +231,7 @@ app.get('/api/transactions/all', adminMiddleware, (req, res) => {
   res.json(all(`SELECT t.*, p.name as product_name, u.name as user_name, u.email FROM transactions t JOIN products p ON t.product_id=p.id JOIN users u ON t.user_id=u.id ORDER BY t.created_at DESC`, []));
 });
 
+// ─── API ANTREAN SERVIS (QUEUE) ───
 app.post('/api/queues', authMiddleware, (req, res) => {
   const { service_type } = req.body;
   const today = new Date().toISOString().split('T')[0];
@@ -244,7 +240,21 @@ app.post('/api/queues', authMiddleware, (req, res) => {
   run("INSERT INTO queues (user_id, service_type, queue_number, status, created_at) VALUES (?, ?, ?, 'menunggu', ?)", [req.user.id, service_type, queueNumber, new Date().toISOString()]);
   res.json({ success: true, queue: { queue_number: queueNumber } });
 });
-app.get('/api/queues/my', authMiddleware, (req, res) => { res.json(all("SELECT * FROM queues WHERE user_id=? ORDER BY created_at DESC", [req.user.id])); });
+
+app.get('/api/queues/my', authMiddleware, (req, res) => { 
+  res.json(all("SELECT * FROM queues WHERE user_id=? ORDER BY created_at DESC", [req.user.id])); 
+});
+
+// API ADMIN BACA SEMUA ANTREAN
+app.get('/api/queues/all', adminMiddleware, (req, res) => {
+  res.json(all(`SELECT q.*, u.name as user_name, u.email, u.vehicle_type FROM queues q JOIN users u ON q.user_id=u.id ORDER BY q.created_at DESC`, []));
+});
+
+// API ADMIN UBAH STATUS ANTREAN JADI SELESAI
+app.put('/api/queues/:id/status', adminMiddleware, (req, res) => {
+  run("UPDATE queues SET status=? WHERE id=?", [req.body.status, req.params.id]);
+  res.json({ success: true });
+});
 
 app.get('/api/ai/recommendations', authMiddleware, (req, res) => {
   const history = all(`SELECT p.category FROM transactions t JOIN products p ON t.product_id=p.id WHERE t.user_id=? AND t.status='Lunas' ORDER BY t.created_at DESC`, [req.user.id]);

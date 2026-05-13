@@ -8,66 +8,26 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      /* PALET WARNA (Dark Slate & Orange) */
-      --bg-main: #020617; /* Slate 950 */
-      --bg-surface: #0f172a; /* Slate 900 */
-      --bg-card: #1e293b; /* Slate 800 */
-      --primary: #f97316; /* Orange 500 */
-      --primary-hover: #ea580c; /* Orange 600 */
-      --text-main: #f8fafc; /* Slate 50 */
-      --text-muted: #94a3b8; /* Slate 400 */
+      --bg-main: #020617; --bg-surface: #0f172a; --bg-card: #1e293b;
+      --primary: #f97316; --primary-hover: #ea580c;
+      --text-main: #f8fafc; --text-muted: #94a3b8;
       --border-color: rgba(255, 255, 255, 0.1);
       --sidebar-w: 260px;
     }
-    
     * { margin:0; padding:0; box-sizing:border-box; }
-    
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background: var(--bg-main); 
-      color: var(--text-main); 
-      min-height: 100vh; 
-      display: flex;
-      font-size: 15px; 
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; font-size: 15px; }
     h1, h2, h3, .brand { font-family: 'Plus Jakarta Sans', sans-serif; }
 
     /* SIDEBAR */
-    .sidebar {
-      width: var(--sidebar-w); min-height: 100vh;
-      background: var(--bg-surface);
-      border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column;
-      position: sticky; top: 0; height: 100vh; overflow-y: auto;
-      flex-shrink: 0;
-    }
-    .sidebar-brand {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .brand-name {
-      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; font-weight: 800;
-      color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;
-      text-decoration: none;
-    }
+    .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--bg-surface); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; }
+    .sidebar-brand { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+    .brand-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; text-decoration: none; }
     .brand-name span { color: var(--primary); }
-    
-    .brand-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3);
-      color: var(--primary); padding: 4px 10px; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-    }
+    .brand-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); color: var(--primary); padding: 4px 10px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
     
     .sidebar-nav { padding: 1.5rem 1rem; flex: 1; }
     .nav-section-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; padding: 0.5rem 0.75rem; margin-top: 0.5rem; }
-    .nav-item {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 10px 12px; border-radius: 8px; cursor: pointer;
-      font-size: 0.9rem; font-weight: 500; color: var(--text-muted);
-      transition: all 0.2s; border: none; background: transparent; width: 100%; text-align: left;
-      font-family: 'Inter', sans-serif; margin-bottom: 4px;
-    }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); transition: all 0.2s; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Inter', sans-serif; margin-bottom: 4px; }
     .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
     .nav-item.active { background: rgba(249, 115, 22, 0.1); color: var(--primary); font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.2); }
     .nav-icon { font-size: 1.1rem; width: 24px; text-align: center; }
@@ -82,37 +42,21 @@
 
     /* MAIN */
     .main { flex: 1; overflow-y: auto; background: var(--bg-main); }
-
-    /* TOP BAR */
-    .topbar {
-      padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color);
-      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
-    }
+    .topbar { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .page-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; }
     .topbar-right { display: flex; align-items: center; gap: 1rem; }
     .live-badge { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted); font-weight: 500;}
     .live-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* CONTENT */
     .content { padding: 2.5rem; }
-
-    /* METRIC CARDS */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
-    .metric-card {
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: 16px; padding: 1.5rem;
-      position: relative; overflow: hidden;
-      transition: all 0.2s;
-    }
+    .metric-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden; transition: all 0.2s; }
     .metric-card:hover { transform: translateY(-4px); border-color: rgba(249, 115, 22, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
     .metric-icon { font-size: 1.6rem; margin-bottom: 1rem; display: inline-block; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border-color); }
     .metric-val { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
     .metric-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
 
-    /* SECTIONS */
     .section-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
     .section-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
     .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
@@ -139,6 +83,8 @@
     .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-danger { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
     .btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+    .btn-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .btn-success:hover { background: rgba(16, 185, 129, 0.2); }
     .btn-edit { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid var(--border-color); }
     .btn-edit:hover { background: rgba(255, 255, 255, 0.1); }
     .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
@@ -161,7 +107,7 @@
     /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 300; transform: translateY(100px); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; min-width: 300px; }
     .toast.show { transform: translateY(0); opacity: 1; }
-    .toast-title { font-weight: 600; font-size: 0.95rem; color: #fff; }
+    .toast-title { font-weight: 600; font-size: 0.95rem; color: #fff; margin-bottom: 0.2rem; }
     .toast-msg { font-size: 0.85rem; color: var(--text-muted); }
 
     .search-input { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 16px; color: #fff; font-size: 0.9rem; outline: none; width: 240px; font-family: 'Inter', sans-serif; }
@@ -169,7 +115,6 @@
 
     .empty-state { padding: 4rem 2rem; text-align: center; color: var(--text-muted); font-size: 0.95rem; }
 
-    /* PAGE SECTIONS */
     .page-section { display: none; }
     .page-section.active { display: block; }
 
@@ -194,6 +139,9 @@
       <span class="nav-icon">📊</span> Dashboard
     </button>
     <div class="nav-section-label">Manajemen</div>
+    <button class="nav-item" onclick="showPage('queues', this)">
+      <span class="nav-icon">📅</span> Antrean Servis
+    </button>
     <button class="nav-item" onclick="showPage('products', this)">
       <span class="nav-icon">📦</span> Inventori Produk
     </button>
@@ -257,11 +205,6 @@
           <div class="metric-val" id="mProducts">—</div>
           <div class="metric-label">Produk Aktif</div>
         </div>
-        <div class="metric-card" style="border-color: rgba(239,68,68,0.3);">
-          <div class="metric-icon">⚠️</div>
-          <div class="metric-val" id="mLowStock" style="color: #f87171;">—</div>
-          <div class="metric-label">Stok Hampir Habis</div>
-        </div>
       </div>
 
       <div class="section-card">
@@ -274,6 +217,18 @@
         <div id="dashboardOrders" class="table-responsive">
           <div class="empty-state">Memuat transaksi...</div>
         </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="page-queues">
+      <div class="section-card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Data Antrean Servis</div>
+            <div class="section-sub">Daftar booking servis yang diajukan oleh pelanggan</div>
+          </div>
+        </div>
+        <div id="adminQueuesTable" class="table-responsive"><div class="empty-state">Memuat antrean...</div></div>
       </div>
     </div>
 
@@ -324,31 +279,21 @@
   <div class="modal">
     <div class="modal-title" id="modalTitle">➕ Tambah Produk</div>
     <input type="hidden" id="editId" />
-    
     <div class="form-group">
       <label class="form-label">URL Gambar (Opsional)</label>
       <input class="form-input" id="pImage" placeholder="https://images.unsplash.com/..." />
     </div>
-
     <div class="form-group">
       <label class="form-label">Nama Produk</label>
       <input class="form-input" id="pName" placeholder="Contoh: Oli Mesin Fastron" />
     </div>
-    
     <div class="form-row2">
       <div class="form-group">
         <label class="form-label">Kategori</label>
         <select class="form-input" id="pCategory">
-          <option>Oli Mesin</option>
-          <option>Rem</option>
-          <option>Filter</option>
-          <option>Busi</option>
-          <option>Aki</option>
-          <option>Belt</option>
-          <option>Suspensi</option>
-          <option>Lampu</option>
-          <option>Oli Transmisi</option>
-          <option>Aksesoris</option>
+          <option>Oli Mesin</option><option>Rem</option><option>Filter</option>
+          <option>Busi</option><option>Aki</option><option>Belt</option>
+          <option>Suspensi</option><option>Lampu</option><option>Oli Transmisi</option><option>Aksesoris</option>
         </select>
       </div>
       <div class="form-group">
@@ -356,7 +301,6 @@
         <input class="form-input" id="pBrand" placeholder="Contoh: Pertamina" />
       </div>
     </div>
-    
     <div class="form-row2">
       <div class="form-group">
         <label class="form-label">Harga (Rp)</label>
@@ -367,12 +311,10 @@
         <input class="form-input" type="number" id="pStock" placeholder="100" />
       </div>
     </div>
-    
     <div class="form-group">
       <label class="form-label">Deskripsi Singkat</label>
       <input class="form-input" id="pDesc" placeholder="Jelaskan keunggulan produk ini..." />
     </div>
-    
     <div class="modal-actions">
       <button class="btn btn-primary" style="flex:1" onclick="saveProduct()">Simpan Data</button>
       <button class="btn btn-edit" style="flex:1" onclick="closeProductModal()">Batal</button>
@@ -406,22 +348,21 @@
   let allProducts = [];
   let deleteId = null;
 
-  // Routing
   function showPage(page, el) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.getElementById('page-' + page).classList.add('active');
     if (el) el.classList.add('active');
     
-    const titles = { dashboard:'Dashboard Overview', products:'Inventori Produk', orders:'Semua Transaksi', users:'Data Pelanggan' };
+    const titles = { dashboard:'Dashboard Overview', queues:'Antrean Servis', products:'Inventori Produk', orders:'Semua Transaksi', users:'Data Pelanggan' };
     document.getElementById('pageTitle').textContent = titles[page] || page;
     
     if (page === 'products') loadProducts();
     if (page === 'orders') loadOrders();
     if (page === 'users') loadUsers();
+    if (page === 'queues') loadAdminQueues();
   }
 
-  // Init
   window.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([loadStats(), loadDashboardOrders()]);
   });
@@ -434,7 +375,6 @@
       document.getElementById('mRevenue').textContent = 'Rp ' + (d.revenue/1000000).toFixed(1) + 'M';
       document.getElementById('mOrders').textContent = d.orders;
       document.getElementById('mProducts').textContent = d.products;
-      document.getElementById('mLowStock').textContent = d.low_stock;
     } catch {}
   }
 
@@ -477,6 +417,50 @@
       </tbody>
     </table>`;
   }
+
+  // --- FUNGSI BARU UNTUK ANTREAN SERVIS ---
+  async function loadAdminQueues() {
+    try {
+      const res = await fetch('/api/queues/all', { headers: { Authorization: `Bearer ${token}` } });
+      const queues = await res.json();
+      const el = document.getElementById('adminQueuesTable');
+      if (!queues.length) { el.innerHTML = '<div class="empty-state">Belum ada booking servis dari pelanggan.</div>'; return; }
+      el.innerHTML = `<table>
+        <thead><tr><th>No. Antrean</th><th>Pelanggan</th><th>Layanan / Kendaraan</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+        <tbody>
+          ${queues.map(q => `
+            <tr>
+              <td><strong style="color:var(--primary); font-size:1.15rem">#${q.queue_number}</strong></td>
+              <td><strong>${q.user_name}</strong><br><span style="font-size:0.75rem;color:var(--text-muted)">${q.email}</span></td>
+              <td>${q.service_type}<br><span style="font-size:0.75rem;color:var(--text-muted)">${q.vehicle_type || 'Mobil/Motor'}</span></td>
+              <td><span class="badge ${q.status === 'menunggu' ? 'badge-warning' : 'badge-success'}">${q.status}</span></td>
+              <td>${new Date(q.created_at).toLocaleDateString('id-ID')}</td>
+              <td>
+                ${q.status === 'menunggu' 
+                  ? `<button class="btn btn-success btn-sm" onclick="selesaikanServis(${q.id})">✔ Selesaikan</button>` 
+                  : `<span style="color:var(--text-muted); font-size:0.8rem; font-weight:600;">Selesai</span>`}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+    } catch {}
+  }
+
+  async function selesaikanServis(id) {
+    if(!confirm('Tandai servis kendaraan ini sudah selesai?')) return;
+    try {
+      const res = await fetch(`/api/queues/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'selesai' })
+      });
+      if(res.ok) {
+        showToast('✅', 'Berhasil', 'Status antrean diubah jadi Selesai.');
+        loadAdminQueues();
+      }
+    } catch {}
+  }
+  // ------------------------------------------
 
   async function loadProducts() {
     try {
@@ -556,7 +540,6 @@
     document.getElementById('editId').value = '';
     ['pImage','pName','pBrand','pPrice','pStock','pDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('productModal').classList.add('active');
-    showPage('products', document.querySelector('.nav-item:nth-child(3)'));
   }
 
   function openEditModal(p) {
@@ -574,7 +557,7 @@
 
   function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
 
-async function saveProduct() {
+  async function saveProduct() {
     const id = document.getElementById('editId').value;
     const body = {
       name: document.getElementById('pName').value,
@@ -604,11 +587,11 @@ async function saveProduct() {
         showToast('❌','Error', d.error || 'Terjadi kesalahan sistem.');
       }
     } catch(err) { 
-      // JIKA MASUK KESINI ARTINYA RAILWAY LAGI RESTART / MATI SESAAT
       console.error(err);
-      showToast('⚠️','Menunggu Server','Server Railway sedang sibuk/restart. Coba klik simpan lagi dalam 10 detik.'); 
+      showToast('⚠️','Menunggu Server','Server Railway sedang memproses update. Silakan klik simpan lagi dalam 5 detik.'); 
     }
   }
+
   function openDeleteModal(id, name) {
     deleteId = id;
     document.getElementById('deleteProductName').textContent = name;
