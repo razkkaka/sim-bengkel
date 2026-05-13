@@ -59,10 +59,13 @@
     .empty-state { padding: 4rem 2rem; text-align: center; color: var(--text-muted); }
     .empty-state .icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
 
-    .btn-pay { background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;}
+    .btn-pay { background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;}
     .btn-pay:hover { background: #059669; }
     .btn-del { background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; border: 1px solid rgba(239,68,68,0.3); cursor: pointer; transition: 0.2s;}
     .btn-del:hover { background: rgba(239, 68, 68, 0.2); }
+    
+    .btn-edit { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid var(--border-color); padding: 6px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:0.2s;}
+    .btn-edit:hover { background: rgba(255,255,255,0.1); }
 
     /* AI RECOMMENDATION SECTION */
     .ai-section { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; margin-bottom: 3rem; position: relative; overflow: hidden; }
@@ -80,10 +83,10 @@
     .btn-ai-buy { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .btn-ai-buy:hover { background: var(--primary); border-color: var(--primary); }
 
-    /* MODAL MULTI-STEP CHECKOUT */
+    /* MODAL UMUM */
     .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;}
     .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; transform: scale(0.95); transition: all 0.2s; text-align: left; }
+    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; transform: scale(0.95); transition: all 0.2s; text-align: left; max-height: 90vh; overflow-y: auto;}
     .modal-overlay.active .modal { transform: scale(1); }
     .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
     
@@ -110,6 +113,19 @@
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 300; transform: translateY(100px); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; min-width: 320px; }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 0.2rem; }
+
+    /* CSS KHUSUS UNTUK PRINT NOTA (Menghilangkan Background Gelap) */
+    @media print {
+      body * { visibility: hidden; }
+      #notaModal, #notaModal * { visibility: visible; }
+      #notaModal {
+        position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+        background: #fff !important; align-items: flex-start; justify-content: center;
+        padding-top: 20px; z-index: 9999; display: flex !important;
+      }
+      .modal { box-shadow: none !important; border: none !important; max-width: 450px !important; padding: 20px !important; background: #fff !important;}
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -156,8 +172,8 @@
   <div class="section-card" style="border-color: rgba(249, 115, 22, 0.4);">
     <div class="section-card-header">
       <div>
-        <div class="section-card-title" style="color: var(--primary);">🛒 Order Saya (Belum Dibayar)</div>
-        <div class="section-card-sub">Segera selesaikan pembayaran untuk memproses pesanan Anda.</div>
+        <div class="section-card-title" style="color: var(--primary);">🛒 Order Saya (Keranjang)</div>
+        <div class="section-card-sub">Segera checkout untuk memproses semua pesanan Anda.</div>
       </div>
     </div>
     <div id="cartContainer" class="table-responsive">
@@ -213,10 +229,9 @@
 
 <div class="modal-overlay" id="checkoutModal">
   <div class="modal">
-    
     <div id="step-delivery" class="checkout-step active">
-      <div class="modal-title">Pengiriman</div>
-      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Pilih metode pengambilan untuk <strong id="coProdName" style="color:#fff"></strong></p>
+      <div class="modal-title">Pengiriman Keranjang</div>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Pilih metode pengambilan untuk <strong id="coProdName" style="color:#fff">Semua Barang</strong> Anda.</p>
       
       <label class="checkout-option active" id="optPickup" onclick="setDelivery('pickup')">
         <input type="radio" name="del" checked>
@@ -229,12 +244,12 @@
         <input type="radio" name="del">
         <div>
           <strong style="color:#fff; display:block;">Delivery / Antar ke Rumah</strong>
-          <span style="font-size:0.8rem; color:var(--text-muted)">Ongkos kirim Rp 15.000</span>
+          <span style="font-size:0.8rem; color:var(--text-muted)">Ongkos kirim flat Rp 15.000 untuk seluruh keranjang</span>
         </div>
       </label>
       
       <div id="addressBox">
-        <textarea id="coAddress" rows="3" placeholder="Masukkan alamat lengkap..."></textarea>
+        <textarea id="coAddress" rows="3" placeholder="Masukkan alamat pengiriman lengkap..."></textarea>
       </div>
       
       <button class="btn-modal btn-modal-primary" onclick="nextStep('payment')">Lanjut Pilih Pembayaran</button>
@@ -243,7 +258,7 @@
 
     <div id="step-payment" class="checkout-step">
       <div class="modal-title">Metode Pembayaran</div>
-      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Total Tagihan: <strong id="coTotal" style="color:var(--primary); font-size:1.1rem;"></strong></p>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Grand Total: <strong id="coTotal" style="color:var(--primary); font-size:1.2rem;"></strong></p>
       
       <label class="checkout-option active" id="optQRIS" onclick="setPayment('QRIS')">
         <input type="radio" name="pay" checked>
@@ -277,10 +292,51 @@
         <div style="font-size:0.85rem; color:var(--primary);">BCA / Mandiri / BNI / BRI</div>
       </div>
 
-      <button class="btn-modal btn-modal-primary" onclick="processCheckout()">Saya Sudah Transfer / Scan</button>
+      <button class="btn-modal btn-modal-primary" onclick="processBulkCheckout()">Saya Sudah Transfer / Scan</button>
       <button class="btn-modal btn-modal-glass" onclick="nextStep('payment')">Pilih Metode Lain</button>
     </div>
 
+  </div>
+</div>
+
+<div class="modal-overlay" id="notaModal">
+  <div class="modal" style="background: #fff; color: #000; max-width: 380px;">
+    
+    <div style="text-align:center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;">
+      <h2 style="font-family:'Plus Jakarta Sans',sans-serif; color:#000; font-weight:800; font-size:1.6rem; margin-bottom:2px;">SIM-BENGKEL</h2>
+      <div style="font-size:0.8rem; color:#555;">Jl. Raya IPB Dramaga, Bogor</div>
+      <div style="font-size:0.8rem; color:#555;">Bukti Tanda Terima Lunas</div>
+    </div>
+    
+    <table style="width:100%; font-size:0.85rem; margin-bottom:15px; color:#000;">
+      <tr><td style="padding:4px 0; color:#555;">No. Transaksi</td><td style="text-align:right; font-weight:700;" id="nInv"></td></tr>
+      <tr><td style="padding:4px 0; color:#555;">Tanggal Lunas</td><td style="text-align:right; font-weight:700;" id="nDate"></td></tr>
+      <tr><td style="padding:4px 0; color:#555;">Pelanggan</td><td style="text-align:right; font-weight:700;" id="nName"></td></tr>
+    </table>
+    
+    <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px;">
+      <div style="font-weight:700; margin-bottom:8px; font-size:0.95rem; line-height: 1.3;" id="nProd"></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555; margin-bottom:4px;">
+        <span>Pengiriman:</span><span id="nDel" style="font-weight:600; text-transform:uppercase;"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555;">
+        <span>Metode Bayar:</span><span id="nPay" style="font-weight:600;"></span>
+      </div>
+    </div>
+    
+    <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; margin-bottom:20px;">
+      <span>TOTAL</span>
+      <span id="nTotal"></span>
+    </div>
+    
+    <div style="text-align:center; font-size:0.75rem; color:#888; font-style: italic;">
+      Terima kasih telah berbelanja di SIM-Bengkel.<br>Simpan nota ini sebagai bukti pesanan.
+    </div>
+    
+    <div class="modal-actions no-print" style="margin-top: 2rem;">
+      <button class="btn-modal btn-modal-primary" style="background:#f97316;" onclick="window.print()">🖨️ Cetak / PDF</button>
+      <button class="btn-modal btn-modal-glass" style="background:#f1f5f9; color:#333; border:1px solid #cbd5e1;" onclick="closeModal('notaModal')">Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -298,8 +354,8 @@
   document.getElementById('userName').textContent = user?.name || '';
   document.getElementById('welcomeName').textContent = user?.name?.split(' ')[0] || '';
 
-  // State Checkout
-  let coData = { id:null, name:'', price:0, delivery:'pickup', payment:'QRIS', address:'' };
+  // State Cart Checkout
+  let cartData = { itemsCount: 0, subTotal: 0, delivery: 'pickup', payment: 'QRIS', address: '' };
 
   window.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([loadProfile(), loadOrders(), loadQueues(), loadRecommendations()]);
@@ -349,43 +405,67 @@
       if (!pending.length) { 
         cartCont.innerHTML = '<div class="empty-state">Keranjang Anda Kosong.</div>'; 
       } else {
-        cartCont.innerHTML = `<table>
-          <thead><tr><th>Produk</th><th>Total Tagihan</th><th>Aksi</th></tr></thead>
+        const cartTotal = pending.reduce((sum, item) => sum + item.total_price, 0);
+        
+        let cartHtml = `<table>
+          <thead><tr><th>Produk</th><th>Harga</th><th>Aksi</th></tr></thead>
           <tbody>
             ${pending.map(o => `<tr>
               <td><div style="display:flex; align-items:center; gap:10px;">
-                ${o.image_url.startsWith('http') ? `<img src="${o.image_url}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;">` : `<span style="font-size:1.5rem">${o.image_url}</span>`}
+                ${o.image_url.startsWith('http') ? `<img src="${o.image_url}" onerror="this.outerHTML='<span style=\\'font-size:2rem\\'>🔧</span>'" style="width:45px;height:45px;border-radius:6px;object-fit:cover; border:1px solid var(--border-color);">` : `<span style="font-size:2rem">${o.image_url}</span>`}
                 <strong>${o.product_name}</strong>
               </div></td>
               <td><strong style="color:#fff">Rp ${o.total_price.toLocaleString('id-ID')}</strong></td>
               <td>
-                <div style="display:flex; gap:8px;">
-                  <button class="btn-pay" onclick="openCheckout(${o.id}, '${o.product_name.replace(/'/g,"\\'")}', ${o.total_price})">Bayar / Checkout</button>
-                  <button class="btn-del" onclick="deleteCartItem(${o.id})">Batal</button>
-                </div>
+                <button class="btn-del" onclick="deleteCartItem(${o.id})">❌ Hapus</button>
               </td>
             </tr>`).join('')}
           </tbody></table>`;
+          
+        // Tambahin Baris Footer buat Checkout Semua
+        cartHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; background:rgba(255,255,255,0.02); border-top:1px solid var(--border-color);">
+            <div>
+              <div style="font-size:0.9rem; color:var(--text-muted)">Total Belanja (${pending.length} Barang):</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--primary)">Rp ${cartTotal.toLocaleString('id-ID')}</div>
+            </div>
+            <button class="btn-pay" onclick="openBulkCheckout(${cartTotal}, ${pending.length})">Checkout Semua ➔</button>
+          </div>
+        `;
+        cartCont.innerHTML = cartHtml;
       }
 
-      // RENDER RIWAYAT (LUNAS)
+      // RENDER RIWAYAT (LUNAS) & TOMBOL NOTA
       const ordCont = document.getElementById('ordersContainer');
       if (!completed.length) {
         ordCont.innerHTML = '<div class="empty-state">Belum Ada Transaksi Selesai.</div>';
       } else {
         ordCont.innerHTML = `<table>
-          <thead><tr><th>Produk</th><th>Pengiriman</th><th>Pembayaran</th><th>Total</th><th>Status</th></tr></thead>
+          <thead><tr><th>Produk</th><th>Pengiriman</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
           <tbody>
             ${completed.map(o => `<tr>
               <td><strong>${o.product_name}</strong></td>
               <td style="text-transform:capitalize; color:var(--text-muted)">${o.delivery_method || '-'}</td>
-              <td style="color:var(--text-muted)">${o.payment_method || '-'}</td>
               <td style="color:var(--primary); font-weight:700">Rp ${o.total_price.toLocaleString('id-ID')}</td>
               <td><span class="status-badge status-confirmed">LUNAS</span></td>
+              <td><button class="btn-edit" onclick="showNota('${o.id}', '${o.product_name.replace(/'/g, "&apos;")}', ${o.total_price}, '${o.delivery_method}', '${o.payment_method}', '${o.created_at}')">📄 Nota</button></td>
             </tr>`).join('')}
           </tbody></table>`;
       }
     } catch {}
+  }
+
+  // FITUR TAMPILKAN NOTA
+  function showNota(id, prodName, total, delivery, payment, dateStr) {
+    document.getElementById('nInv').textContent = 'INV-SB/' + id;
+    document.getElementById('nDate').textContent = new Date(dateStr).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+    document.getElementById('nName').textContent = user.name;
+    document.getElementById('nProd').textContent = prodName;
+    document.getElementById('nDel').textContent = delivery || 'Pickup';
+    document.getElementById('nPay').textContent = payment || 'Cash';
+    document.getElementById('nTotal').textContent = 'Rp ' + parseInt(total).toLocaleString('id-ID');
+    
+    openModal('notaModal');
   }
 
   // AI RECS
@@ -397,7 +477,7 @@
       if (data.products?.length) {
         grid.innerHTML = data.products.map(p => `
           <div class="ai-product-card" onclick="addToCart(${p.id})">
-            <div class="ai-prod-img">${p.image_url.startsWith('http') ? `<img src="${p.image_url}">` : `<span style="font-size:3rem">${p.image_url}</span>`}</div>
+            <div class="ai-prod-img">${p.image_url.startsWith('http') ? `<img src="${p.image_url}" onerror="this.outerHTML='<span style=\\'font-size:3rem\\'>🔧</span>'">` : `<span style="font-size:3rem">${p.image_url}</span>`}</div>
             <div class="ai-prod-name">${p.name}</div>
             <div class="ai-prod-price">Rp ${p.price.toLocaleString('id-ID')}</div>
             <button class="btn-ai-buy">➕ Masukkan Keranjang</button>
@@ -415,26 +495,26 @@
         body: JSON.stringify({ product_id: productId, quantity: 1 })
       });
       const data = await res.json();
-      if (res.ok) { showToast('🛒', 'Masuk Keranjang', 'Silakan cek Keranjang Belanja Anda.'); loadOrders(); } 
+      if (res.ok) { showToast('🛒', 'Masuk Keranjang', 'Berhasil ditambahkan ke keranjang.'); loadOrders(); } 
       else { showToast('❌', 'Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Gagal terhubung.'); }
   }
 
   async function deleteCartItem(id) {
-    if(!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+    if(!confirm('Keluarkan barang ini dari keranjang?')) return;
     try {
       await fetch(`/api/transactions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }});
       loadOrders();
     } catch {}
   }
 
-  /* --- MULTI STEP CHECKOUT FLOW --- */
+  /* --- MULTI STEP BULK CHECKOUT FLOW --- */
   function openModal(id) { document.getElementById(id).classList.add('active'); }
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-  function openCheckout(id, name, price) {
-    coData = { id, name, price, delivery:'pickup', payment:'QRIS', address:'' };
-    document.getElementById('coProdName').textContent = name;
+  function openBulkCheckout(totalPrice, itemCount) {
+    cartData = { itemsCount: itemCount, subTotal: totalPrice, delivery:'pickup', payment:'QRIS', address:'' };
+    document.getElementById('coProdName').textContent = `${itemCount} Barang di Keranjang`;
     setDelivery('pickup');
     setPayment('QRIS');
     nextStep('delivery');
@@ -442,21 +522,19 @@
   }
 
   function nextStep(stepId) {
-    // Validasi Delivery
     if (stepId === 'payment') {
-      if (coData.delivery === 'delivery') {
+      if (cartData.delivery === 'delivery') {
         const addr = document.getElementById('coAddress').value.trim();
-        if (!addr) { showToast('⚠️', 'Alamat Kosong', 'Harap isi alamat lengkap.'); return; }
-        coData.address = addr;
-      } else { coData.address = ''; }
+        if (!addr) { showToast('⚠️', 'Alamat Kosong', 'Harap isi alamat lengkap pengiriman.'); return; }
+        cartData.address = addr;
+      } else { cartData.address = ''; }
       
-      const finalPrice = coData.delivery === 'delivery' ? coData.price + 15000 : coData.price;
+      const finalPrice = cartData.delivery === 'delivery' ? cartData.subTotal + 15000 : cartData.subTotal;
       document.getElementById('coTotal').textContent = `Rp ${finalPrice.toLocaleString('id-ID')}`;
     }
 
-    // Set Tampilan Pembayaran (QRIS vs VA)
     if (stepId === 'confirm') {
-      const isQR = coData.payment === 'QRIS' || coData.payment === 'GoPay';
+      const isQR = cartData.payment === 'QRIS' || cartData.payment === 'GoPay';
       document.getElementById('qrisBox').style.display = isQR ? 'block' : 'none';
       document.getElementById('vaBox').style.display = isQR ? 'none' : 'block';
       document.getElementById('payInstruction').textContent = isQR ? 'Scan kode QR ini dengan aplikasi pembayaran Anda.' : 'Transfer ke Virtual Account di bawah ini.';
@@ -467,7 +545,7 @@
   }
 
   function setDelivery(method) {
-    coData.delivery = method;
+    cartData.delivery = method;
     document.getElementById('optPickup').classList.remove('active');
     document.getElementById('optDelivery').classList.remove('active');
     if (method === 'pickup') {
@@ -480,29 +558,29 @@
   }
 
   function setPayment(method) {
-    coData.payment = method;
+    cartData.payment = method;
     ['QRIS','GoPay','Bank'].forEach(id => document.getElementById('opt'+id).classList.remove('active'));
     if(method === 'QRIS') document.getElementById('optQRIS').classList.add('active');
     if(method === 'GoPay') document.getElementById('optGoPay').classList.add('active');
     if(method === 'Transfer Bank') document.getElementById('optBank').classList.add('active');
   }
 
-  async function processCheckout() {
+  async function processBulkCheckout() {
     closeModal('checkoutModal');
     try {
-      const res = await fetch(`/api/transactions/${coData.id}/checkout`, {
+      const res = await fetch(`/api/transactions/checkout-cart`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 
-          delivery_method: coData.delivery, 
-          address: coData.address,
-          payment_method: coData.payment,
-          extra_fee: coData.delivery === 'delivery' ? 15000 : 0
+          delivery_method: cartData.delivery, 
+          address: cartData.address,
+          payment_method: cartData.payment,
+          extra_fee: cartData.delivery === 'delivery' ? 15000 : 0
         })
       });
       const data = await res.json();
       if (res.ok) {
-        showToast('✅', 'Pembayaran Berhasil!', `Pesanan ${coData.name} telah Lunas.`);
+        showToast('✅', 'Pembayaran Berhasil!', `Seluruh pesanan Anda telah Lunas.`);
         loadOrders(); loadRecommendations();
       } else { showToast('❌', 'Checkout Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Koneksi terputus.'); }

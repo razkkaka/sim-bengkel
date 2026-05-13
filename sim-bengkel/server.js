@@ -55,10 +55,7 @@ async function initDb() {
 
   db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'pelanggan', vehicle_type TEXT, last_oil_change DATE, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, brand TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  
-  // TABEL TRANSAKSI DIUPDATE TOTAL: Tambah payment_method & Status Default Tertunda
   db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', delivery_method TEXT, address TEXT, payment_method TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
   if (!get("SELECT id FROM users WHERE role='admin'")) {
@@ -77,7 +74,7 @@ async function initDb() {
       ['Filter Udara K&N Universal Performance','Filter',320000,40,'Filter udara high-performance, bisa dicuci.','https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80','K&N'],
       ['Busi NGK Iridium BPR6EIX','Busi',95000,120,'Busi iridium untuk pembakaran sempurna.','https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80','NGK'],
       ['Aki Kering GS Astra MF 35Ah','Aki',650000,30,'Aki maintenance-free, siap pakai.','https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80','GS Astra'],
-      ['Sarung Jok Kulit Premium MBtech (Foto Jok)','Aksesoris',1200000,15,'Sarung pelapis jok mobil bahan kulit sintetis MBtech (Foto Asli Jok).','https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80','MBtech'],
+      ['Sarung Jok Kulit Premium MBtech','Aksesoris',1200000,15,'Sarung pelapis jok mobil bahan kulit sintetis MBtech.','https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80','MBtech'],
       ['Seat Cover Universal (Kain Fabric)','Aksesoris',250000,40,'Sarung pelindung jok mobil universal bahan kain.','https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=400&q=80','OtoCover'],
       ['Karpet Dasar Mobil (Wipe-Clean)','Aksesoris',450000,25,'Karpet dasar pelindung lantai kabin mobil, anti air.','https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&q=80','OtoMat'],
       ['Sistem Alarm Mobil + Central Lock Oem','Aksesoris',350000,30,'Sistem keamanan alarm mobil universal dengan remote.','https://images.unsplash.com/photo-1558002038-1055907df827?w=400&q=80','Oem'],
@@ -106,7 +103,7 @@ const adminMiddleware = (req, res, next) => {
   });
 };
 
-app.post('/api/register', (req, res) => { /* Sama kayak sebelumnya, biarkan default */
+app.post('/api/register', (req, res) => {
   const { name, email, password, vehicle_type } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
   if (get("SELECT id FROM users WHERE email=?", [email])) return res.status(400).json({ error: 'Email sudah terdaftar' });
@@ -120,7 +117,7 @@ app.post('/api/register', (req, res) => { /* Sama kayak sebelumnya, biarkan defa
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/login', (req, res) => { /* Sama kayak sebelumnya */
+app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
   const u = get("SELECT * FROM users WHERE email=?", [email]);
   if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' });
@@ -150,30 +147,46 @@ app.post('/api/transactions', authMiddleware, (req, res) => {
   try {
     const total = prod.price * quantity;
     const now = new Date().toISOString();
-    // Insert dengan status Tertunda (Masuk Keranjang), belum potong stok
     run("INSERT INTO transactions (user_id,product_id,quantity,total_price,status,created_at) VALUES (?,?,?,?,'Tertunda',?)",
       [req.user.id,product_id,quantity,total,now]);
     res.json({ success:true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─── CHECKOUT & BAYAR (UBAH STATUS LUNAS) ───
-app.put('/api/transactions/:id/checkout', authMiddleware, (req, res) => {
+// ─── CHECKOUT SEMUA KERANJANG (BULK CHECKOUT) ───
+app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
   const { delivery_method, address, payment_method, extra_fee } = req.body;
-  const tx = get("SELECT * FROM transactions WHERE id=? AND user_id=? AND status='Tertunda'", [req.params.id, req.user.id]);
-  if (!tx) return res.status(404).json({ error: 'Pesanan tidak ditemukan atau sudah dibayar' });
+  const pendingTxs = all("SELECT * FROM transactions WHERE user_id=? AND status='Tertunda'", [req.user.id]);
   
-  const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
-  if (prod.category !== 'Jasa' && prod.stock < tx.quantity) return res.status(400).json({ error: 'Stok produk sudah habis' });
+  if (pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang belanja kosong.' });
 
   try {
-    const finalPrice = tx.total_price + (extra_fee || 0);
-    run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?",
-      [delivery_method, address, payment_method, finalPrice, req.params.id]);
-    
-    // Potong stok setelah bayar
-    if (prod.category !== 'Jasa') {
-        run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]);
+    // 1. Cek ketersediaan stok dulu sebelum bayar
+    for (let tx of pendingTxs) {
+       const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
+       if (prod.category !== 'Jasa' && prod.stock < tx.quantity) {
+           return res.status(400).json({ error: `Stok ${prod.name} tidak mencukupi.` });
+       }
+    }
+
+    // 2. Update status ke Lunas dan potong stok
+    let isFeeApplied = false; // Ongkir cuma dibebankan ke item pertama biar ga dobel
+    for (let tx of pendingTxs) {
+       let finalPrice = tx.total_price;
+       if (!isFeeApplied) {
+           finalPrice += (extra_fee || 0);
+           isFeeApplied = true;
+       }
+       
+       // Update Transaksi
+       run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?",
+         [delivery_method, address, payment_method, finalPrice, tx.id]);
+
+       // Potong Stok
+       const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
+       if (prod.category !== 'Jasa') {
+           run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]);
+       }
     }
     res.json({ success:true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -193,7 +206,7 @@ app.get('/api/transactions/all', adminMiddleware, (req, res) => {
   res.json(all(`SELECT t.*, p.name as product_name, u.name as user_name, u.email FROM transactions t JOIN products p ON t.product_id=p.id JOIN users u ON t.user_id=u.id ORDER BY t.created_at DESC`, []));
 });
 
-// QUEUES & AI RECS (Biarkan seperti sebelumnya)
+// QUEUES & AI RECS
 app.post('/api/queues', authMiddleware, (req, res) => {
   const { service_type } = req.body;
   const today = new Date().toISOString().split('T')[0];
@@ -233,11 +246,6 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 });
 
 // BOOT
-if (fs.existsSync(DB_PATH)) {
-    try { fs.unlinkSync(DB_PATH); console.log("🔥 DB LAMA DIBAKAR OLEH SERVER!"); } 
-    catch(err) { console.error("⚠️ Gagal bakar DB", err); }
-}
-
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
