@@ -18,8 +18,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 let db;
 
 function saveDb() {
-  const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
+  try {
+    const data = db.export();
+    fs.writeFileSync(DB_PATH, Buffer.from(data));
+  } catch(err) {
+    console.error("Gagal nyimpen DB:", err);
+  }
 }
 
 function run(sql, params = []) {
@@ -53,16 +57,29 @@ async function initDb() {
     console.log('✅ Created new DB');
   }
 
+  // BIKIN TABEL DASAR
   db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'pelanggan', vehicle_type TEXT, last_oil_change DATE, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, brand TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', delivery_method TEXT, address TEXT, payment_method TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+  db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+  db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
+  // ─── FITUR AUTO-MIGRATION (ANTI CRASH) ───
+  // Otomatis nambahin kolom baru kalau di database lama belum ada
+  try { db.run("SELECT brand FROM products LIMIT 1"); } 
+  catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); console.log("🔧 Migrasi: Kolom brand ditambahkan."); }
+
+  try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } 
+  catch {
+    db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT");
+    db.run("ALTER TABLE transactions ADD COLUMN address TEXT");
+    db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT");
+    console.log("🔧 Migrasi: Kolom transaksi baru ditambahkan.");
+  }
+
+  // SEEDING DATA AWAL (Admin & Produk)
   if (!get("SELECT id FROM users WHERE role='admin'")) {
     const hash = bcrypt.hashSync('admin123', 10);
-    const now = new Date().toISOString();
-    db.run("INSERT INTO users (name,email,password,role,created_at) VALUES (?,?,?,?,?)", ['Admin SIM-Bengkel','admin@simbengkel.com',hash,'admin',now]);
-    console.log('✅ Admin seeded');
+    db.run("INSERT INTO users (name,email,password,role,created_at) VALUES (?,?,?,?,?)", ['Admin SIM-Bengkel','admin@simbengkel.com',hash,'admin',new Date().toISOString()]);
   }
 
   if (!get("SELECT id FROM products LIMIT 1")) {
@@ -85,11 +102,11 @@ async function initDb() {
       ['Jasa Retrim Panel Doortrim Pintu','Aksesoris',600000,999,'Pelapisan ulang panel doortrim pintu interior mobil.','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80','Custom'],
     ];
     for (const p of P) db.run("INSERT INTO products (name,category,price,stock,description,image_url,brand,created_at) VALUES (?,?,?,?,?,?,?,?)", [...p, now]);
-    console.log('✅ Products seeded');
   }
   saveDb();
 }
 
+// MIDDLEWARE
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token' });
@@ -103,6 +120,7 @@ const adminMiddleware = (req, res, next) => {
   });
 };
 
+// API ROUTES
 app.post('/api/register', (req, res) => {
   const { name, email, password, vehicle_type } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
@@ -136,7 +154,28 @@ app.get('/api/products', (req, res) => {
   res.json(all(sql, p));
 });
 
-// ─── TRANSAKSI KERANJANG (TERTUNDA) ───
+app.post('/api/products', adminMiddleware, (req, res) => {
+  const { name, category, price, stock, description, brand, image_url } = req.body;
+  try {
+    run("INSERT INTO products (name,category,price,stock,description,brand,image_url,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [name,category,+price,+stock||0,description||'',brand||'',image_url||'🔧',new Date().toISOString()]);
+    res.json({success:true});
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/products/:id', adminMiddleware, (req, res) => {
+  const { name, category, price, stock, description, brand, image_url } = req.body;
+  try {
+    run("UPDATE products SET name=?,category=?,price=?,stock=?,description=?,brand=?,image_url=? WHERE id=?",
+      [name,category,+price,+stock,description||'',brand||'',image_url||'🔧',req.params.id]);
+    res.json({success:true});
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/products/:id', adminMiddleware, (req, res) => {
+  run("DELETE FROM products WHERE id=?", [req.params.id]); res.json({ success:true });
+});
+
 app.post('/api/transactions', authMiddleware, (req, res) => {
   if (req.user.role === 'admin') return res.status(403).json({ error: 'Admin tidak dapat membeli' });
   const { product_id, quantity=1 } = req.body;
@@ -153,7 +192,6 @@ app.post('/api/transactions', authMiddleware, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─── CHECKOUT SEMUA KERANJANG (BULK CHECKOUT) ───
 app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
   const { delivery_method, address, payment_method, extra_fee } = req.body;
   const pendingTxs = all("SELECT * FROM transactions WHERE user_id=? AND status='Tertunda'", [req.user.id]);
@@ -161,7 +199,6 @@ app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
   if (pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang belanja kosong.' });
 
   try {
-    // 1. Cek ketersediaan stok dulu sebelum bayar
     for (let tx of pendingTxs) {
        const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
        if (prod.category !== 'Jasa' && prod.stock < tx.quantity) {
@@ -169,20 +206,14 @@ app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
        }
     }
 
-    // 2. Update status ke Lunas dan potong stok
-    let isFeeApplied = false; // Ongkir cuma dibebankan ke item pertama biar ga dobel
+    let isFeeApplied = false;
     for (let tx of pendingTxs) {
        let finalPrice = tx.total_price;
-       if (!isFeeApplied) {
-           finalPrice += (extra_fee || 0);
-           isFeeApplied = true;
-       }
+       if (!isFeeApplied) { finalPrice += (extra_fee || 0); isFeeApplied = true; }
        
-       // Update Transaksi
        run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?",
          [delivery_method, address, payment_method, finalPrice, tx.id]);
 
-       // Potong Stok
        const prod = get("SELECT * FROM products WHERE id=?", [tx.product_id]);
        if (prod.category !== 'Jasa') {
            run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]);
@@ -192,7 +223,6 @@ app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// API DELETE dari Keranjang
 app.delete('/api/transactions/:id', authMiddleware, (req, res) => {
   run("DELETE FROM transactions WHERE id=? AND user_id=? AND status='Tertunda'", [req.params.id, req.user.id]);
   res.json({ success:true });
@@ -206,7 +236,6 @@ app.get('/api/transactions/all', adminMiddleware, (req, res) => {
   res.json(all(`SELECT t.*, p.name as product_name, u.name as user_name, u.email FROM transactions t JOIN products p ON t.product_id=p.id JOIN users u ON t.user_id=u.id ORDER BY t.created_at DESC`, []));
 });
 
-// QUEUES & AI RECS
 app.post('/api/queues', authMiddleware, (req, res) => {
   const { service_type } = req.body;
   const today = new Date().toISOString().split('T')[0];
@@ -239,13 +268,11 @@ app.get('/api/admin/stats', adminMiddleware, (req, res) => {
 
 app.get('/api/admin/users', adminMiddleware, (req, res) => { res.json(all("SELECT id,name,email,role,vehicle_type,created_at FROM users ORDER BY created_at DESC", [])); });
 
-// HTML PAGES
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 [['/login','login'], ['/register','register'], ['/dashboard','dashboard'], ['/admin','admin']].forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
 
-// BOOT
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });

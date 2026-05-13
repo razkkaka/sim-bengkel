@@ -574,7 +574,7 @@
 
   function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
 
-  async function saveProduct() {
+async function saveProduct() {
     const id = document.getElementById('editId').value;
     const body = {
       name: document.getElementById('pName').value,
@@ -603,9 +603,12 @@
         const d = await res.json();
         showToast('❌','Error', d.error || 'Terjadi kesalahan sistem.');
       }
-    } catch { showToast('❌','Error','Koneksi ke server gagal.'); }
+    } catch(err) { 
+      // JIKA MASUK KESINI ARTINYA RAILWAY LAGI RESTART / MATI SESAAT
+      console.error(err);
+      showToast('⚠️','Menunggu Server','Server Railway sedang sibuk/restart. Coba klik simpan lagi dalam 10 detik.'); 
+    }
   }
-
   function openDeleteModal(id, name) {
     deleteId = id;
     document.getElementById('deleteProductName').textContent = name;
