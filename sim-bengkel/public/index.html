@@ -68,16 +68,12 @@
     }
     .btn-ghost { background: transparent; color: var(--text-muted); }
     .btn-ghost:hover { color: #fff; background: rgba(255,255,255,0.05); }
-    .btn-outline {
-      background: transparent;
-      color: #fff;
-      border: 1px solid var(--border-color);
-    }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid var(--border-color); }
     .btn-outline:hover { background: rgba(255,255,255,0.05); }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
 
-    /* HERO SECTION (Sesuai Gambar Lovable) */
+    /* HERO SECTION */
     .hero {
       padding: 10rem 2rem 6rem;
       position: relative;
@@ -89,7 +85,7 @@
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      align-items: flex-start; /* Rata Kiri */
+      align-items: flex-start;
     }
     
     .badge-ai {
@@ -126,7 +122,7 @@
     
     .btn-lg {
       padding: 14px 28px;
-      border-radius: 8px; /* Lebih kotak seperti di gambar */
+      border-radius: 8px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
@@ -136,20 +132,12 @@
       font-family: 'Inter', sans-serif;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-lg-primary {
-      background: var(--primary);
-      color: white;
-    }
-    .btn-lg-primary:hover { background: var(--primary-hover); }
-    .btn-lg-glass {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      color: #fff;
-      backdrop-filter: blur(10px);
-    }
+    .btn-lg-primary { background: var(--primary); color: white; }
+    .btn-lg-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4);}
+    .btn-lg-glass { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); color: #fff; backdrop-filter: blur(10px); }
     .btn-lg-glass:hover { background: rgba(255, 255, 255, 0.08); }
 
-    /* INFO STRIP (Bagian Bawah Hero) */
+    /* INFO STRIP */
     .info-strip {
       display: flex;
       gap: 2rem;
@@ -219,14 +207,38 @@
     }
     .btn-buy:hover { background: var(--primary); border-color: var(--primary); }
 
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.8); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    /* MODAL UMUM */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 90%; max-width: 400px; transform: scale(0.95); transition: all 0.2s; text-align: left; }
+    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 90%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; }
     .modal-overlay.active .modal { transform: scale(1); }
     .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
-    .modal-text { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
-    .modal-actions { display: flex; gap: 0.75rem; }
+    .modal-text { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem;}
+    
+    /* MODAL CHECKOUT & QRIS */
+    .checkout-option {
+      display: flex; gap: 10px; align-items: center;
+      padding: 12px; border: 1px solid var(--border-color);
+      border-radius: 8px; margin-bottom: 10px; cursor: pointer;
+      transition: 0.2s; background: rgba(255,255,255,0.02);
+    }
+    .checkout-option:hover { border-color: var(--primary); background: rgba(249, 115, 22, 0.05); }
+    .checkout-option.active { border-color: var(--primary); background: rgba(249, 115, 22, 0.1); }
+    .checkout-option input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
+    
+    #addressBox {
+      display: none; margin-top: 1rem;
+    }
+    #addressBox textarea {
+      width: 100%; background: var(--bg-main); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 12px; color: #fff; font-family: 'Inter', sans-serif;
+      resize: none; outline: none;
+    }
+    #addressBox textarea:focus { border-color: var(--primary); }
+
+    .qris-container { text-align: center; background: #fff; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }
+    .qris-container img { max-width: 200px; margin: 0 auto; display: block; }
 
     /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 300; transform: translateY(100px); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; }
@@ -267,16 +279,16 @@
     
     <h1>Servis kendaraan,<br><span class="text-accent">tanpa drama antrean.</span></h1>
     
-    <p>Booking jadwal mandiri, pantau status pengerjaan secara real-time, dan beli sparepart asli — semua dalam satu dashboard untuk pelanggan, mekanik, dan admin.</p>
+    <p>Booking jadwal mandiri, pantau status pengerjaan secara real-time, dan beli sparepart asli (Delivery/Ambil di Tempat) — semua dalam satu dashboard terintegrasi.</p>
     
     <div class="hero-cta">
-      <button onclick="openWashModal()" class="btn-lg btn-lg-primary">Booking Servis Sekarang ➔</button>
+      <button onclick="openWashModal()" class="btn-lg btn-lg-primary">Booking Servis / Cuci ➔</button>
       <a href="#catalog" class="btn-lg btn-lg-glass">Lihat Katalog Sparepart</a>
     </div>
     
     <div class="info-strip">
-      <div class="info-item">🕒 Booking 24/7</div>
-      <div class="info-item">🛡️ Sparepart Asli</div>
+      <div class="info-item">🚚 Delivery & Pickup</div>
+      <div class="info-item">📱 Support QRIS</div>
       <div class="info-item">✨ Rekomendasi AI</div>
     </div>
   </div>
@@ -285,7 +297,7 @@
 <section class="section" id="catalog">
   <div class="section-inner">
     <div class="section-header">
-      <h2 class="section-title">Katalog Sparepart Asli</h2>
+      <h2 class="section-title">Katalog Sparepart & Aksesoris</h2>
     </div>
     
     <div class="filter-bar">
@@ -310,7 +322,6 @@
   <div class="modal">
     <div class="modal-title">Booking Servis / Cuci</div>
     <div class="modal-text">Pilih layanan kendaraan Anda untuk mengambil nomor antrean.</div>
-    
     <div style="margin-bottom: 1.5rem;">
       <select id="washServiceType" style="width: 100%; padding: 12px; border-radius: 8px; background: var(--bg-main); border: 1px solid var(--border-color); color: #fff; outline: none; font-family: 'Inter', sans-serif;">
         <option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option>
@@ -318,33 +329,75 @@
         <option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option>
       </select>
     </div>
-
     <div class="modal-actions">
-      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmWash()">Booking Sekarang</button>
-      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeWashModal()">Batal</button>
+      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmWash()">Ambil Antrean</button>
+      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeModal('washModal')">Batal</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="buyModal">
+<div class="modal-overlay" id="authModal">
   <div class="modal">
     <div class="modal-title">Akses Ditolak</div>
-    <div class="modal-text">Silakan login terlebih dahulu untuk melakukan transaksi atau booking servis.</div>
+    <div class="modal-text">Silakan login terlebih dahulu untuk melakukan transaksi atau booking.</div>
     <div class="modal-actions">
       <a href="/login" class="btn-lg btn-lg-glass" style="flex:1; text-align:center;">Masuk</a>
       <a href="/register" class="btn-lg btn-lg-primary" style="flex:1; text-align:center;">Daftar</a>
     </div>
-    <button onclick="closeModal()" style="margin-top:1rem; width:100%; background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif;">Tutup</button>
+    <button onclick="closeModal('authModal')" style="margin-top:1rem; width:100%; background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif;">Tutup</button>
   </div>
 </div>
 
-<div class="modal-overlay" id="confirmModal">
+<div class="modal-overlay" id="checkoutModal">
   <div class="modal">
-    <div class="modal-title">Konfirmasi Order</div>
-    <div class="modal-text" id="confirmText">Anda yakin ingin membeli produk ini?</div>
+    <div class="modal-title">Opsi Pengiriman</div>
+    <div class="modal-text" id="checkoutProductName"></div>
+    
+    <label class="checkout-option active" id="optPickup" onclick="selectDelivery('pickup')">
+      <input type="radio" name="deliveryOpt" checked>
+      <div>
+        <strong style="color:#fff; display:block; font-size:0.95rem;">Ambil di Bengkel</strong>
+        <span style="font-size:0.8rem; color:var(--text-muted)">Ambil langsung, tanpa ongkir tambahan.</span>
+      </div>
+    </label>
+    
+    <label class="checkout-option" id="optDelivery" onclick="selectDelivery('delivery')">
+      <input type="radio" name="deliveryOpt">
+      <div>
+        <strong style="color:#fff; display:block; font-size:0.95rem;">Delivery / Antar ke Rumah</strong>
+        <span style="font-size:0.8rem; color:var(--text-muted)">Dikirim oleh kurir rekanan kami.</span>
+      </div>
+    </label>
+
+    <div id="addressBox">
+      <label style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Alamat Pengiriman Lengkap:</label>
+      <textarea id="deliveryAddress" rows="3" placeholder="Masukkan nama jalan, nomor rumah, RT/RW, dan patokan..."></textarea>
+    </div>
+
     <div class="modal-actions">
-      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmBuy()">Ya, Beli</button>
-      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeConfirmModal()">Batal</button>
+      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="proceedToPayment()">Lanjut Pembayaran</button>
+      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeModal('checkoutModal')">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <div class="modal-title">Pembayaran QRIS</div>
+    <div class="modal-text">Silakan scan QRIS di bawah ini menggunakan M-Banking atau E-Wallet pilihan Anda (GoPay, OVO, Dana, ShopeePay).</div>
+    
+    <div class="qris-container">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS Mockup" />
+      <div style="color:#000; font-weight:700; margin-top:10px; font-family:'Plus Jakarta Sans', sans-serif;">NMID: ID1029384756</div>
+    </div>
+    
+    <div style="text-align:center; font-size:1.1rem; color:#fff; font-weight:600; margin-bottom:1.5rem;">
+      Total: <span id="paymentTotal" style="color:var(--primary)"></span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmTransaction()">Saya Sudah Bayar</button>
+      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeModal('paymentModal')">Batal</button>
     </div>
   </div>
 </div>
@@ -359,13 +412,17 @@
 
 <footer>
   <div style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:0.5rem"><span style="color:#f97316">●</span> SIM-Bengkel</div>
-  <div>© 2024 Workshop OS. Sistem Rekomendasi AI.</div>
+  <div>© 2024 Workshop OS. Sistem E-Commerce Terintegrasi.</div>
 </footer>
 
 <script>
   let allProducts = [];
   let currentCategory = '';
-  let currentProduct = null;
+  
+  // Variabel untuk proses checkout
+  let pendingProduct = null;
+  let selectedDeliveryMethod = 'pickup';
+
   const token = localStorage.getItem('sb_token');
   const user = JSON.parse(localStorage.getItem('sb_user') || 'null');
 
@@ -411,7 +468,7 @@
           <div class="product-desc">${p.description || ''}</div>
           <div class="product-footer">
             <div class="product-price">Rp ${p.price.toLocaleString('id-ID')}</div>
-            <button class="btn-buy" onclick="buyProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price})">Beli</button>
+            <button class="btn-buy" onclick="startCheckout(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price})">Beli</button>
           </div>
         </div>
       </div>
@@ -433,16 +490,19 @@
     renderProducts(filtered);
   }
 
-  /* FITUR CUCI/SERVIS */
+  /* MODAL HELPERS */
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  /* FITUR BOOKING SERVIS */
   function openWashModal() {
-    if (!token || !user) { document.getElementById('buyModal').classList.add('active'); return; }
-    document.getElementById('washModal').classList.add('active');
+    if (!token || !user) { openModal('authModal'); return; }
+    openModal('washModal');
   }
-  function closeWashModal() { document.getElementById('washModal').classList.remove('active'); }
 
   async function confirmWash() {
     const serviceType = document.getElementById('washServiceType').value;
-    closeWashModal();
+    closeModal('washModal');
     try {
       const res = await fetch('/api/queues', {
         method: 'POST',
@@ -450,32 +510,72 @@
         body: JSON.stringify({ service_type: serviceType })
       });
       const data = await res.json();
-      if (res.ok) { showToast('🎟️', 'Booking Diterima', `No. Antrean: ${data.queue.queue_number}`); } 
+      if (res.ok) { showToast('🎟️', 'Booking Diterima', `No. Antrean Anda: ${data.queue.queue_number}`); } 
       else { showToast('❌', 'Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Koneksi terputus'); }
   }
 
-  /* FITUR BELI */
-  function buyProduct(id, name, price) {
-    if (!token || !user) { document.getElementById('buyModal').classList.add('active'); return; }
+  /* FLOW CHECKOUT E-COMMERCE BARU */
+  function startCheckout(id, name, price) {
+    if (!token || !user) { openModal('authModal'); return; }
     if (user.role === 'admin') { showToast('⚠️', 'Akses Ditolak', 'Admin tidak bisa belanja.'); return; }
-    currentProduct = { id, name, price };
-    document.getElementById('confirmText').innerHTML = `<strong style="color:#fff">${name}</strong><br><br>Total Bayar: <strong style="color:var(--primary); font-size:1.2rem">Rp ${price.toLocaleString('id-ID')}</strong>`;
-    document.getElementById('confirmModal').classList.add('active');
+    
+    pendingProduct = { id, name, price };
+    document.getElementById('checkoutProductName').innerHTML = `Pilih metode pengambilan untuk <strong style="color:#fff">${name}</strong>`;
+    
+    // Reset form delivery
+    selectDelivery('pickup');
+    document.getElementById('deliveryAddress').value = '';
+    
+    openModal('checkoutModal');
   }
 
-  async function confirmBuy() {
-    if (!currentProduct) return;
-    closeConfirmModal();
+  function selectDelivery(method) {
+    selectedDeliveryMethod = method;
+    document.getElementById('optPickup').classList.remove('active');
+    document.getElementById('optDelivery').classList.remove('active');
+    
+    if (method === 'pickup') {
+      document.getElementById('optPickup').classList.add('active');
+      document.getElementById('addressBox').style.display = 'none';
+    } else {
+      document.getElementById('optDelivery').classList.add('active');
+      document.getElementById('addressBox').style.display = 'block';
+    }
+  }
+
+  function proceedToPayment() {
+    if (selectedDeliveryMethod === 'delivery' && document.getElementById('deliveryAddress').value.trim() === '') {
+      showToast('⚠️', 'Alamat Kosong', 'Harap masukkan alamat pengiriman dengan lengkap.');
+      return;
+    }
+    closeModal('checkoutModal');
+    
+    // Tambah ongkir fiktif jika delivery
+    const finalPrice = selectedDeliveryMethod === 'delivery' ? pendingProduct.price + 15000 : pendingProduct.price;
+    document.getElementById('paymentTotal').textContent = `Rp ${finalPrice.toLocaleString('id-ID')}`;
+    
+    openModal('paymentModal');
+  }
+
+  async function confirmTransaction() {
+    closeModal('paymentModal');
+    const address = selectedDeliveryMethod === 'delivery' ? document.getElementById('deliveryAddress').value.trim() : '';
+
     try {
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ product_id: currentProduct.id, quantity: 1 })
+        body: JSON.stringify({ 
+          product_id: pendingProduct.id, 
+          quantity: 1,
+          delivery_method: selectedDeliveryMethod,
+          address: address
+        })
       });
       const data = await res.json();
       if (res.ok) {
-        showToast('✅', 'Berhasil', `${currentProduct.name} telah dipesan.`);
+        showToast('✅', 'Pembayaran Dikonfirmasi', `Pesanan ${pendingProduct.name} sedang diproses.`);
         loadProducts();
       } else { showToast('❌', 'Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Koneksi terputus'); }
@@ -490,9 +590,6 @@
     setTimeout(() => t.classList.remove('show'), 3500);
   }
 
-  function closeModal() { document.getElementById('buyModal').classList.remove('active'); }
-  function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('active'); }
-  
   function logout() {
     localStorage.removeItem('sb_token');
     localStorage.removeItem('sb_user');
