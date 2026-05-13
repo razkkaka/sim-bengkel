@@ -208,13 +208,26 @@
     .btn-buy:hover { background: var(--primary); border-color: var(--primary); }
 
     /* MODAL UMUM */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.8); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;}
     .modal-overlay.active { opacity: 1; pointer-events: all; }
-    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 90%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; }
+    .modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; max-height: 90vh; overflow-y: auto;}
     .modal-overlay.active .modal { transform: scale(1); }
     .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
     .modal-text { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem;}
+    
+    /* MODAL BOOKING SERVIS KHUSUS (Lebar & 2 Kolom) */
+    .modal-booking { max-width: 850px; padding: 2.5rem; }
+    .booking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+    .section-label { font-size: 0.9rem; font-weight: 700; color: #fff; letter-spacing: 0.05em; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+    
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .form-input {
+      width: 100%; background: var(--bg-main); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif; transition: 0.2s;
+    }
+    .form-input:focus { border-color: var(--primary); }
     
     /* MODAL CHECKOUT & QRIS */
     .checkout-option {
@@ -227,9 +240,7 @@
     .checkout-option.active { border-color: var(--primary); background: rgba(249, 115, 22, 0.1); }
     .checkout-option input[type="radio"] { accent-color: var(--primary); transform: scale(1.2); }
     
-    #addressBox {
-      display: none; margin-top: 1rem;
-    }
+    #addressBox { display: none; margin-top: 1rem; }
     #addressBox textarea {
       width: 100%; background: var(--bg-main); border: 1px solid var(--border-color);
       border-radius: 8px; padding: 12px; color: #fff; font-family: 'Inter', sans-serif;
@@ -237,8 +248,8 @@
     }
     #addressBox textarea:focus { border-color: var(--primary); }
 
-    .qris-container { text-align: center; background: #fff; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; }
-    .qris-container img { max-width: 200px; margin: 0 auto; display: block; }
+    .qris-container { text-align: center; background: #fff; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
+    .qris-container img { max-width: 220px; margin: 0 auto; display: block; }
 
     /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 300; transform: translateY(100px); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 1rem; }
@@ -252,6 +263,7 @@
       .hero { padding: 8rem 1.5rem 4rem; }
       .hero-content { align-items: flex-start; text-align: left; }
       .info-strip { flex-direction: column; gap: 1rem; }
+      .booking-grid { grid-template-columns: 1fr; gap: 1rem; }
     }
   </style>
 </head>
@@ -282,7 +294,7 @@
     <p>Booking jadwal mandiri, pantau status pengerjaan secara real-time, dan beli sparepart asli (Delivery/Ambil di Tempat) — semua dalam satu dashboard terintegrasi.</p>
     
     <div class="hero-cta">
-      <button onclick="openWashModal()" class="btn-lg btn-lg-primary">Booking Servis / Cuci ➔</button>
+      <button onclick="openWashModal()" class="btn-lg btn-lg-primary">Booking Servis Sekarang ➔</button>
       <a href="#catalog" class="btn-lg btn-lg-glass">Lihat Katalog Sparepart</a>
     </div>
     
@@ -306,8 +318,8 @@
       <button class="filter-chip" onclick="filterCategory(this, 'Oli Mesin')">Oli Mesin</button>
       <button class="filter-chip" onclick="filterCategory(this, 'Rem')">Rem</button>
       <button class="filter-chip" onclick="filterCategory(this, 'Filter')">Filter</button>
-      <button class="filter-chip" onclick="filterCategory(this, 'Aki')">Aki</button>
       <button class="filter-chip" onclick="filterCategory(this, 'Aksesoris')">Aksesoris</button>
+      <button class="filter-chip" onclick="filterCategory(this, 'Lampu')">Lampu</button>
     </div>
 
     <div class="product-grid" id="productGrid">
@@ -319,19 +331,87 @@
 </section>
 
 <div class="modal-overlay" id="washModal">
-  <div class="modal">
-    <div class="modal-title">Booking Servis / Cuci</div>
-    <div class="modal-text">Pilih layanan kendaraan Anda untuk mengambil nomor antrean.</div>
-    <div style="margin-bottom: 1.5rem;">
-      <select id="washServiceType" style="width: 100%; padding: 12px; border-radius: 8px; background: var(--bg-main); border: 1px solid var(--border-color); color: #fff; outline: none; font-family: 'Inter', sans-serif;">
-        <option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option>
-        <option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option>
-        <option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option>
-      </select>
+  <div class="modal modal-booking">
+    <div class="modal-title">Daftar Layanan Servis & Cuci</div>
+    <div class="modal-text">Isi form di bawah ini untuk mendaftar servis kendaraan Anda. Nomor antrean akan otomatis digenerate.</div>
+    
+    <div class="booking-grid">
+      <div>
+        <div class="section-label">DATA DIRI</div>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-input" id="bookName" placeholder="Masukkan nama..." readonly style="opacity: 0.7;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="bookEmail" placeholder="nama@email.com" readonly style="opacity: 0.7;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Handphone</label>
+          <input type="text" class="form-input" id="bookPhone" placeholder="08123456789" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nomor Rangka (17 digit)</label>
+          <input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." />
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">DATA KENDARAAN & LAYANAN</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Model</label>
+            <select class="form-input">
+              <option>Pilih Model</option>
+              <option>Matic</option>
+              <option>Manual</option>
+              <option>Sedan</option>
+              <option>SUV</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipe</label>
+            <select class="form-input">
+              <option>Standar</option>
+              <option>Premium</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Polisi</label>
+          <input type="text" class="form-input" placeholder="B 1234 ABC" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilih Layanan Utama</label>
+          <select id="washServiceType" class="form-input">
+            <option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option>
+            <option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option>
+            <option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option>
+            <option value="Pengecekan Kaki-Kaki">Pengecekan Kaki-kaki & Suspensi</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Tanggal Servis</label>
+            <input type="date" class="form-input" id="bookDate" />
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Jam Servis</label>
+            <select class="form-input">
+              <option>09:00 - 10:00</option>
+              <option>10:00 - 11:00</option>
+              <option>13:00 - 14:00</option>
+              <option>15:00 - 16:00</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmWash()">Ambil Antrean</button>
-      <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeModal('washModal')">Batal</button>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <button class="btn-lg btn-lg-primary" style="width: 100%; max-width: 400px; margin-bottom: 15px;" onclick="confirmWash()">BOOK SERVIS SEKARANG</button>
+      <br>
+      <button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif; font-size: 0.9rem;" onclick="closeModal('washModal')">Batalkan dan Kembali</button>
     </div>
   </div>
 </div>
@@ -365,7 +445,7 @@
       <input type="radio" name="deliveryOpt">
       <div>
         <strong style="color:#fff; display:block; font-size:0.95rem;">Delivery / Antar ke Rumah</strong>
-        <span style="font-size:0.8rem; color:var(--text-muted)">Dikirim oleh kurir rekanan kami.</span>
+        <span style="font-size:0.8rem; color:var(--text-muted)">Dikirim oleh kurir rekanan. Estimasi ongkir Rp 15.000.</span>
       </div>
     </label>
 
@@ -384,19 +464,19 @@
 <div class="modal-overlay" id="paymentModal">
   <div class="modal">
     <div class="modal-title">Pembayaran QRIS</div>
-    <div class="modal-text">Silakan scan QRIS di bawah ini menggunakan M-Banking atau E-Wallet pilihan Anda (GoPay, OVO, Dana, ShopeePay).</div>
+    <div class="modal-text">Silakan scan QRIS di bawah ini menggunakan M-Banking atau E-Wallet pilihan Anda (GoPay, OVO, Dana, dll).</div>
     
     <div class="qris-container">
       <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS Mockup" />
-      <div style="color:#000; font-weight:700; margin-top:10px; font-family:'Plus Jakarta Sans', sans-serif;">NMID: ID1029384756</div>
+      <div style="color:#000; font-weight:800; margin-top:12px; font-family:'Plus Jakarta Sans', sans-serif; font-size: 1.1rem;">NMID: ID1029384756</div>
     </div>
     
-    <div style="text-align:center; font-size:1.1rem; color:#fff; font-weight:600; margin-bottom:1.5rem;">
-      Total: <span id="paymentTotal" style="color:var(--primary)"></span>
+    <div style="text-align:center; font-size:1.15rem; color:#fff; font-weight:600; margin-bottom:1.5rem;">
+      Total Tagihan: <span id="paymentTotal" style="color:var(--primary)"></span>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmTransaction()">Saya Sudah Bayar</button>
+      <button class="btn-lg btn-lg-primary" style="flex:1;" onclick="confirmTransaction()">Konfirmasi Bayar</button>
       <button class="btn-lg btn-lg-glass" style="flex:1;" onclick="closeModal('paymentModal')">Batal</button>
     </div>
   </div>
@@ -435,6 +515,10 @@
       else document.getElementById('navDash').style.display = 'block';
     }
     loadProducts();
+    
+    // Set auto date for booking
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('bookDate').value = today;
   });
 
   async function loadProducts() {
@@ -497,11 +581,23 @@
   /* FITUR BOOKING SERVIS */
   function openWashModal() {
     if (!token || !user) { openModal('authModal'); return; }
+    
+    // Auto-fill Data Diri
+    document.getElementById('bookName').value = user.name || '';
+    document.getElementById('bookEmail').value = user.email || '';
+    
     openModal('washModal');
   }
 
   async function confirmWash() {
     const serviceType = document.getElementById('washServiceType').value;
+    const phone = document.getElementById('bookPhone').value.trim();
+    
+    if(!phone) {
+        showToast('⚠️', 'Data Belum Lengkap', 'Nomor Handphone wajib diisi.');
+        return;
+    }
+
     closeModal('washModal');
     try {
       const res = await fetch('/api/queues', {
@@ -510,7 +606,7 @@
         body: JSON.stringify({ service_type: serviceType })
       });
       const data = await res.json();
-      if (res.ok) { showToast('🎟️', 'Booking Diterima', `No. Antrean Anda: ${data.queue.queue_number}`); } 
+      if (res.ok) { showToast('🎟️', 'Booking Berhasil', `Silakan datang sesuai jadwal. No. Antrean: ${data.queue.queue_number}`); } 
       else { showToast('❌', 'Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Koneksi terputus'); }
   }
@@ -518,12 +614,11 @@
   /* FLOW CHECKOUT E-COMMERCE BARU */
   function startCheckout(id, name, price) {
     if (!token || !user) { openModal('authModal'); return; }
-    if (user.role === 'admin') { showToast('⚠️', 'Akses Ditolak', 'Admin tidak bisa belanja.'); return; }
+    if (user.role === 'admin') { showToast('⚠️', 'Akses Ditolak', 'Admin tidak bisa berbelanja.'); return; }
     
     pendingProduct = { id, name, price };
-    document.getElementById('checkoutProductName').innerHTML = `Pilih metode pengambilan untuk <strong style="color:#fff">${name}</strong>`;
+    document.getElementById('checkoutProductName').innerHTML = `Pilih pengiriman untuk <strong style="color:#fff">${name}</strong>`;
     
-    // Reset form delivery
     selectDelivery('pickup');
     document.getElementById('deliveryAddress').value = '';
     
@@ -546,12 +641,11 @@
 
   function proceedToPayment() {
     if (selectedDeliveryMethod === 'delivery' && document.getElementById('deliveryAddress').value.trim() === '') {
-      showToast('⚠️', 'Alamat Kosong', 'Harap masukkan alamat pengiriman dengan lengkap.');
+      showToast('⚠️', 'Alamat Kosong', 'Harap isi alamat pengiriman dengan lengkap.');
       return;
     }
     closeModal('checkoutModal');
     
-    // Tambah ongkir fiktif jika delivery
     const finalPrice = selectedDeliveryMethod === 'delivery' ? pendingProduct.price + 15000 : pendingProduct.price;
     document.getElementById('paymentTotal').textContent = `Rp ${finalPrice.toLocaleString('id-ID')}`;
     
@@ -575,7 +669,7 @@
       });
       const data = await res.json();
       if (res.ok) {
-        showToast('✅', 'Pembayaran Dikonfirmasi', `Pesanan ${pendingProduct.name} sedang diproses.`);
+        showToast('✅', 'Pembayaran Lunas', `Pesanan ${pendingProduct.name} segera diproses.`);
         loadProducts();
       } else { showToast('❌', 'Gagal', data.error); }
     } catch { showToast('❌', 'Error', 'Koneksi terputus'); }
@@ -587,7 +681,7 @@
     document.getElementById('toastTitle').textContent = title;
     document.getElementById('toastMsg').textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
+    setTimeout(() => t.classList.remove('show'), 4000);
   }
 
   function logout() {
