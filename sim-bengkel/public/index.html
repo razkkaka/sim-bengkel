@@ -78,7 +78,7 @@
     .hero-img-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, transparent 70%); z-index: -1; filter: blur(40px); }
     .parallax-car { width: 100%; border-radius: 16px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8); }
 
-    /* CATALOG SECTION (SESUAI GAMBAR FIGMA KE-2) */
+    /* CATALOG SECTION */
     .catalog { padding: 6rem 5%; background: var(--bg-main); text-align: center; }
     .catalog-header { margin-bottom: 4rem; }
     .catalog-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
@@ -106,7 +106,6 @@
     .p-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1.25rem; }
     .p-price { font-weight: 800; font-size: 1.25rem; color: var(--primary); font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    /* Tombol Cart Kotak Oranye persis di gambar */
     .btn-cart-icon {
       background: var(--primary); color: #fff; width: 42px; height: 42px;
       border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center;
@@ -117,7 +116,7 @@
     .btn-view-all { background: transparent; border: 1px solid var(--border); color: #fff; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 3rem; display: inline-block; text-decoration: none; }
     .btn-view-all:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
 
-    /* CTA SECTION (SESUAI GAMBAR FIGMA KE-3) */
+    /* CTA SECTION */
     .cta-section { padding: 4rem 5% 6rem; background: var(--bg-main); }
     .cta-box {
       max-width: 900px; margin: 0 auto;
@@ -129,15 +128,9 @@
     .cta-box h2 { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
     .cta-box p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
     
-    /* FOOTER (SESUAI GAMBAR FIGMA KE-3) */
-    footer {
-      background: var(--bg-main); border-top: 1px solid var(--border);
-      padding: 5rem 5% 3rem;
-    }
-    .footer-grid {
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 3rem;
-      max-width: 1200px; margin: 0 auto;
-    }
+    /* FOOTER */
+    footer { background: var(--bg-main); border-top: 1px solid var(--border); padding: 5rem 5% 3rem; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 3rem; max-width: 1200px; margin: 0 auto; }
     .f-brand { display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
     .f-brand-icon { background: var(--primary); padding: 5px 8px; border-radius: 6px; font-size: 1rem; color: #fff; }
     .f-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 250px; }
@@ -150,6 +143,25 @@
     
     .f-contact p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
     .f-contact strong { color: #fff; }
+
+    /* MODAL UMUM */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;}
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; max-height: 90vh; overflow-y: auto;}
+    .modal-overlay.active .modal { transform: scale(1); }
+    .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+    .modal-text { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem;}
+    
+    /* MODAL BOOKING SERVIS */
+    .modal-booking { max-width: 850px; padding: 2.5rem; }
+    .booking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+    .section-label { font-size: 0.9rem; font-weight: 700; color: #fff; letter-spacing: 0.05em; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .form-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif; transition: 0.2s; }
+    .form-input:focus { border-color: var(--primary); }
 
     /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.5rem; z-index: 300; transform: translateY(100px); opacity: 0; transition: 0.4s; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -164,7 +176,7 @@
     }
     @media (max-width: 600px) {
       .footer-grid { grid-template-columns: 1fr; }
-      .catalog-header { flex-direction: column; align-items: center; text-align: center; gap: 1.5rem; }
+      .booking-grid { grid-template-columns: 1fr; gap: 1rem; }
     }
   </style>
 </head>
@@ -203,8 +215,8 @@
     <p>Platform servis otomotif modern dengan booking online, suku cadang berkualitas, dan teknisi profesional. Pengalaman servis tanpa ribet.</p>
     
     <div class="hero-buttons">
-      <button onclick="location.href='/dashboard'" class="btn-primary" style="padding: 16px 32px; font-size: 1rem;">Booking Servis Sekarang</button>
-      <button onclick="location.href='/dashboard'" class="btn-outline" style="padding: 16px 32px; font-size: 1rem;">Lihat Demo Dashboard</button>
+      <button onclick="openWashModal()" class="btn-primary" style="padding: 16px 32px; font-size: 1rem;">Booking Servis Sekarang</button>
+      <button onclick="location.href='#catalog'" class="btn-outline" style="padding: 16px 32px; font-size: 1rem;">Lihat Katalog</button>
     </div>
   </div>
 
@@ -228,17 +240,115 @@
       <div style="grid-column:1/-1; padding:4rem; color:var(--text-muted);">Memuat produk...</div>
     </div>
     
-    <a href="/dashboard" class="btn-view-all">Lihat Semua Produk</a>
+    <a href="#catalog" class="btn-view-all">Lihat Semua Produk ➔</a>
   </div>
 </section>
 
 <section class="cta-section" id="cta">
   <div class="cta-box">
-    <h2>Siap untuk pengalaman servis terbaik?</h2>
-    <p>Bergabung dengan ribuan pengguna yang sudah merasakan kemudahan servis di SIM-Bengkel.</p>
-    <a href="/register" class="btn-primary" style="padding: 16px 40px; font-size: 1.1rem; display: inline-block;">Mulai Sekarang</a>
+    <h2 id="ctaTitle">Siap untuk pengalaman servis terbaik?</h2>
+    <p id="ctaDesc">Bergabung dengan ribuan pengguna yang sudah merasakan kemudahan servis di SIM-Bengkel.</p>
+    <a href="/register" id="ctaBtn" class="btn-primary" style="padding: 16px 40px; font-size: 1.1rem; display: inline-block;">Mulai Sekarang</a>
   </div>
 </section>
+
+<div class="modal-overlay" id="washModal">
+  <div class="modal modal-booking">
+    <div class="modal-title">Daftar Layanan Servis & Cuci</div>
+    <div class="modal-text">Isi form di bawah ini untuk mendaftar servis kendaraan Anda. Nomor antrean akan otomatis digenerate.</div>
+    
+    <div class="booking-grid">
+      <div>
+        <div class="section-label">DATA DIRI</div>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input type="text" class="form-input" id="bookName" placeholder="Masukkan nama..." readonly style="opacity: 0.7;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="bookEmail" placeholder="nama@email.com" readonly style="opacity: 0.7;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Handphone</label>
+          <input type="text" class="form-input" id="bookPhone" placeholder="08123456789" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nomor Rangka (17 digit)</label>
+          <input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." />
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">DATA KENDARAAN & LAYANAN</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Model</label>
+            <select class="form-input">
+              <option>Pilih Model</option>
+              <option>Matic</option>
+              <option>Manual</option>
+              <option>Sedan</option>
+              <option>SUV</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipe</label>
+            <select class="form-input">
+              <option>Standar</option>
+              <option>Premium</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. Polisi</label>
+          <input type="text" class="form-input" placeholder="B 1234 ABC" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilih Layanan Utama</label>
+          <select id="washServiceType" class="form-input">
+            <option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option>
+            <option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option>
+            <option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option>
+            <option value="Pengecekan Kaki-Kaki">Pengecekan Kaki-kaki & Suspensi</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Tanggal Servis</label>
+            <input type="date" class="form-input" id="bookDate" />
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Jam Servis</label>
+            <select class="form-input">
+              <option>09:00 - 10:00</option>
+              <option>10:00 - 11:00</option>
+              <option>13:00 - 14:00</option>
+              <option>15:00 - 16:00</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <button class="btn-lg btn-primary" style="width: 100%; max-width: 400px; margin-bottom: 15px;" onclick="confirmWash()">BOOK SERVIS SEKARANG</button>
+      <br>
+      <button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif; font-size: 0.9rem;" onclick="closeModal('washModal')">Batalkan dan Kembali</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title">Akses Ditolak</div>
+    <div class="modal-text">Silakan login terlebih dahulu untuk memasukkan barang ke keranjang atau booking servis.</div>
+    <div class="modal-actions">
+      <a href="/login" class="btn-outline" style="flex:1; text-align:center;">Masuk</a>
+      <a href="/register" class="btn-primary" style="flex:1; text-align:center;">Daftar</a>
+    </div>
+    <button onclick="closeModal('authModal')" style="margin-top:1rem; width:100%; background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif;">Tutup</button>
+  </div>
+</div>
 
 <footer>
   <div class="footer-grid">
@@ -293,31 +403,32 @@
   const user = JSON.parse(localStorage.getItem('sb_user') || 'null');
 
   window.addEventListener('DOMContentLoaded', () => {
-    // Tweak Navbar based on Login Status
+    // REVISI 3: Tweak CTA & Navbar based on Login Status
     if (token && user) {
       document.getElementById('navGuest').style.display = 'none';
       document.getElementById('navUser').style.display = 'flex';
       document.getElementById('btnDash').style.display = 'flex';
+      
+      // Ubah Teks & Tombol CTA jika user sudah punya akun
+      document.getElementById('ctaTitle').textContent = 'Kendaraan Anda butuh perawatan?';
+      document.getElementById('ctaDesc').textContent = 'Jangan tunggu sampai rusak. Segera jadwalkan servis kendaraan Anda hari ini juga.';
+      const ctaBtn = document.getElementById('ctaBtn');
+      ctaBtn.textContent = 'Booking Servis Sekarang';
+      ctaBtn.href = 'javascript:openWashModal()';
     }
     
     loadProducts();
 
-    // 🚀 GSAP SCROLL ANIMATION (Biar mobilnya jalan pas di scroll) 🚀
+    // Set Default Date Booking Modal
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('bookDate').value = today;
+
+    // GSAP SCROLL ANIMATION
     gsap.registerPlugin(ScrollTrigger);
-    
-    // Animasi Text Hero masuk
     gsap.from(".hero-text > *", { duration: 1, y: 30, opacity: 0, stagger: 0.15, ease: "power3.out" });
-    
-    // Animasi Mobil Parallax
     gsap.to(".parallax-car", {
-      y: 60,
-      scale: 1.1,
-      scrollTrigger: {
-        trigger: ".hero",
-        start: "top top",
-        end: "bottom top",
-        scrub: 1.2
-      }
+      y: 60, scale: 1.1,
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1.2 }
     });
   });
 
@@ -325,8 +436,8 @@
     try {
       const res = await fetch('/api/products');
       allProducts = await res.json();
-      // Tampilkan cuma 6 produk biar landing page nya rapi kayak di gambar
-      renderProducts(allProducts.slice(0, 6));
+      // REVISI 4: Tampilkan SEMUA produk, hapus pembatasan slice()
+      renderProducts(allProducts);
     } catch (e) {
       document.getElementById('productGrid').innerHTML = '<p style="color:red;">Gagal memuat produk.</p>';
     }
@@ -355,8 +466,39 @@
     `).join('');
   }
 
+  // FUNGSI MODAL BOOKING (Kemarin Kelupaan Dimasukin 🙏)
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  function openWashModal() {
+    if (!token || !user) { openModal('authModal'); return; }
+    document.getElementById('bookName').value = user.name || '';
+    document.getElementById('bookEmail').value = user.email || '';
+    openModal('washModal');
+  }
+
+  async function confirmWash() {
+    const serviceType = document.getElementById('washServiceType').value;
+    const phone = document.getElementById('bookPhone').value.trim();
+    if(!phone) { alert('Nomor Handphone wajib diisi.'); return; }
+
+    closeModal('washModal');
+    try {
+      const res = await fetch('/api/queues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ service_type: serviceType })
+      });
+      const data = await res.json();
+      if (res.ok) { 
+        alert(`Booking Berhasil! Silakan datang sesuai jadwal. No. Antrean: ${data.queue.queue_number}`); 
+      } else { alert('Gagal: ' + data.error); }
+    } catch { alert('Koneksi terputus'); }
+  }
+
+  // FUNGSI CART
   async function addToCart(id) {
-    if (!token) { window.location.href='/login'; return; }
+    if (!token) { openModal('authModal'); return; }
     try {
       const res = await fetch('/api/transactions', {
         method: 'POST',
