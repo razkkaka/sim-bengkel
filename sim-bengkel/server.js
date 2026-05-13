@@ -250,7 +250,6 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 });
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
-if (fs.existsSync(DB_PATH)) { fs.unlinkSync(DB_PATH); } // PAKSA HAPUS SAAT START
 initDb().then(() => { 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`);
