@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // 🚀 PENGAMAN MUTLAK: Cegah admin nge-glitch di dashboard
     const tk = localStorage.getItem('sb_token');
     const us = JSON.parse(localStorage.getItem('sb_user') || 'null');
     if (!tk) window.location.href = '/login';
@@ -179,6 +178,8 @@
   <div class="modal">
     <div id="step-delivery" class="checkout-step active">
       <div class="modal-title">Pengiriman Keranjang</div>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Pilih metode pengambilan untuk <strong id="coProdName" style="color:#fff">Semua Barang</strong> Anda.</p>
+      
       <label class="checkout-option active" id="optPickup" onclick="setDelivery('pickup')"><input type="radio" name="del" checked><div><strong style="color:#fff; display:block;">Ambil di Bengkel</strong><span style="font-size:0.8rem; color:var(--text-muted)">Gratis / Tanpa Ongkir</span></div></label>
       <label class="checkout-option" id="optDelivery" onclick="setDelivery('delivery')"><input type="radio" name="del"><div><strong style="color:#fff; display:block;">Delivery / Antar ke Rumah</strong><span style="font-size:0.8rem; color:var(--text-muted)">Ongkos kirim flat Rp 15.000</span></div></label>
       <div id="addressBox"><textarea id="coAddress" rows="3" placeholder="Masukkan alamat pengiriman lengkap..."></textarea></div>
@@ -245,7 +246,6 @@
     try { const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } }); const data = await res.json(); document.getElementById('welcomeSub').textContent = data.vehicle_type ? `Kendaraan: ${data.vehicle_type}` : 'Kelola pesanan Anda'; } catch {}
   }
 
-  // REVISI TAMPILAN TANGGAL & JAM BOOKING
   async function loadQueues() {
     try {
       const res = await fetch('/api/queues/my', { headers: { Authorization: `Bearer ${token}` } });
@@ -311,6 +311,7 @@
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
   function openBulkCheckout(totalPrice, itemCount) { cartData = { itemsCount: itemCount, subTotal: totalPrice, delivery:'pickup', payment:'QRIS', address:'' }; document.getElementById('coProdName').textContent = `${itemCount} Barang di Keranjang`; setDelivery('pickup'); setPayment('QRIS'); nextStep('delivery'); openModal('checkoutModal'); }
+  
   function nextStep(stepId) {
     if (stepId === 'payment') {
       if (cartData.delivery === 'delivery') { const addr = document.getElementById('coAddress').value.trim(); if (!addr) { showToast('⚠️', 'Alamat Kosong', 'Harap isi alamat lengkap pengiriman.'); return; } cartData.address = addr; } else { cartData.address = ''; }
@@ -319,6 +320,7 @@
     if (stepId === 'confirm') { const isQR = cartData.payment === 'QRIS' || cartData.payment === 'GoPay'; document.getElementById('qrisBox').style.display = isQR ? 'block' : 'none'; document.getElementById('vaBox').style.display = isQR ? 'none' : 'block'; document.getElementById('payInstruction').textContent = isQR ? 'Scan kode QR ini dengan aplikasi pembayaran Anda.' : 'Transfer ke Virtual Account di bawah ini.'; }
     document.querySelectorAll('.checkout-step').forEach(el => el.classList.remove('active')); document.getElementById('step-' + stepId).classList.add('active');
   }
+  
   function setDelivery(method) { cartData.delivery = method; document.getElementById('optPickup').classList.remove('active'); document.getElementById('optDelivery').classList.remove('active'); document.getElementById('opt'+(method==='pickup'?'Pickup':'Delivery')).classList.add('active'); document.getElementById('addressBox').style.display = method === 'pickup' ? 'none' : 'block'; }
   function setPayment(method) { cartData.payment = method; ['QRIS','GoPay','Bank'].forEach(id => document.getElementById('opt'+id).classList.remove('active')); document.getElementById('opt'+(method==='Transfer Bank'?'Bank':method)).classList.add('active'); }
 
