@@ -230,11 +230,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 });
 
 // BOM RESET DB (Biar 15 produknya masuk lagi)
-if (fs.existsSync(DB_PATH)) {
-    try { fs.unlinkSync(DB_PATH); console.log("🔥 DB LAMA DIBAKAR OLEH SERVER!"); } 
-    catch(err) { console.error("⚠️ Gagal bakar DB", err); }
-}
-
+// Penutup server yang udah bersih dan stabil
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
