@@ -9,7 +9,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'simbengkel-ultra-secret-key-2024';
-const DB_PATH = './simbengkel.db';
+
+// 🚀 TRIK FILE GAIB: Tambah titik di depan biar jadi hidden file & ga bikin server auto-restart!
+const DB_PATH = './.simbengkel.db'; 
 
 app.use(cors());
 app.use(express.json());
@@ -17,9 +19,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
 
+// 🚀 TRIK ASYNC: Simpan di background biar server ga macet
 function saveDb() {
-  try { fs.writeFileSync(DB_PATH, Buffer.from(db.export())); } 
-  catch(err) { console.error("Gagal nyimpen DB:", err); }
+  fs.writeFile(DB_PATH, Buffer.from(db.export()), (err) => {
+    if (err) console.error("Gagal nyimpen DB:", err);
+  });
 }
 
 function run(sql, params = []) { db.run(sql, params); saveDb(); }
@@ -46,6 +50,14 @@ async function initDb() {
   db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', delivery_method TEXT, address TEXT, payment_method TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
+  try { db.run("SELECT brand FROM products LIMIT 1"); } catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); }
+  try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } 
+  catch {
+    db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT");
+    db.run("ALTER TABLE transactions ADD COLUMN address TEXT");
+    db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT");
+  }
+
   if (!get("SELECT id FROM users WHERE role='admin'")) {
     const hash = bcrypt.hashSync('admin123', 10);
     db.run("INSERT INTO users (name,email,password,role,created_at) VALUES (?,?,?,?,?)", ['Admin SIM-Bengkel','admin@simbengkel.com',hash,'admin',new Date().toISOString()]);
@@ -53,7 +65,6 @@ async function initDb() {
 
   if (!get("SELECT id FROM products LIMIT 1")) {
     const now = new Date().toISOString();
-    // BALIKIN FULL 15 PRODUK!
     const P = [
       ['Oli Mesin Fastron Techno 10W-40','Oli Mesin',85000,150,'Oli sintetik penuh performa tinggi.','https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80','Pertamina'],
       ['Kampas Rem Depan Bendix Metal King','Rem',125000,80,'Kampas rem kualitas OEM, daya cengkram tinggi.','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80','Bendix'],
@@ -122,7 +133,26 @@ app.get('/api/products', (req, res) => {
   res.json(all(sql, p));
 });
 
-// API TRANSAKSI & QUEUE (SAMA SEPERTI SEBELUMNYA)
+app.post('/api/products', adminMiddleware, (req, res) => {
+  const { name, category, price, stock, description, brand, image_url } = req.body;
+  try {
+    run("INSERT INTO products (name,category,price,stock,description,brand,image_url,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [name,category,+price,+stock||0,description||'',brand||'',image_url||'🔧',new Date().toISOString()]);
+    res.json({success:true});
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/products/:id', adminMiddleware, (req, res) => {
+  const { name, category, price, stock, description, brand, image_url } = req.body;
+  try {
+    run("UPDATE products SET name=?,category=?,price=?,stock=?,description=?,brand=?,image_url=? WHERE id=?",
+      [name,category,+price,+stock,description||'',brand||'',image_url||'🔧',req.params.id]);
+    res.json({success:true});
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/products/:id', adminMiddleware, (req, res) => { run("DELETE FROM products WHERE id=?", [req.params.id]); res.json({ success:true }); });
+
 app.post('/api/transactions', authMiddleware, (req, res) => {
   const { product_id, quantity=1 } = req.body;
   const prod = get("SELECT * FROM products WHERE id=?", [product_id]);
@@ -174,29 +204,17 @@ app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   const products = all("SELECT name FROM products", []);
   const productList = products.map(p => p.name).join(', ');
 
-  const systemPrompt = `Kamu adalah Kepala Mekanik AI di "SIM-Bengkel".
-Tugasmu: Analisis keluhan kendaraan pelanggan.
+  const systemPrompt = `Kamu adalah Kepala Mekanik AI di "SIM-Bengkel". Tugasmu: Analisis keluhan kendaraan pelanggan.
 Berikan HANYA output JSON murni tanpa markdown:
-{
-  "diagnosis": "Penjelasan penyebab.",
-  "priority": "Tinggi / Sedang / Rendah",
-  "action": "Langkah pertama.",
-  "recommended_parts": ["Sparepart relevan"]
-}
+{ "diagnosis": "Penjelasan penyebab.", "priority": "Tinggi / Sedang / Rendah", "action": "Langkah pertama.", "recommended_parts": ["Sparepart relevan"] }
 Sparepart yang kami jual: ${productList}. Sarankan dari daftar ini.`;
 
   try {
     const groqKey = process.env.GROQ_API_KEY;
     if (!groqKey) throw new Error("GROQ_API_KEY belum diset.");
-
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: complaint }],
-        response_format: { type: "json_object" }
-      })
+      method: 'POST', headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: complaint }], response_format: { type: "json_object" } })
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error?.message || "Groq Error");
@@ -229,8 +247,6 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
 
-// BOM RESET DB (Biar 15 produknya masuk lagi)
-// Penutup server yang udah bersih dan stabil
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
