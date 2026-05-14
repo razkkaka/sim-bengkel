@@ -9,8 +9,6 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'simbengkel-ultra-secret-key-2024';
-
-// 🚀 TRIK FILE GAIB: Tambah titik di depan biar jadi hidden file & ga bikin server auto-restart!
 const DB_PATH = './.simbengkel.db'; 
 
 app.use(cors());
@@ -18,27 +16,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 let db;
-
-// 🚀 TRIK ASYNC: Simpan di background biar server ga macet
-function saveDb() {
-  fs.writeFile(DB_PATH, Buffer.from(db.export()), (err) => {
-    if (err) console.error("Gagal nyimpen DB:", err);
-  });
-}
-
+function saveDb() { fs.writeFile(DB_PATH, Buffer.from(db.export()), (err) => { if (err) console.error("Gagal nyimpen DB:", err); }); }
 function run(sql, params = []) { db.run(sql, params); saveDb(); }
-
-function get(sql, params = []) {
-  const stmt = db.prepare(sql); stmt.bind(params);
-  if (stmt.step()) { const row = stmt.getAsObject(); stmt.free(); return row; }
-  stmt.free(); return null;
-}
-
-function all(sql, params = []) {
-  const stmt = db.prepare(sql); stmt.bind(params); const rows = [];
-  while (stmt.step()) rows.push(stmt.getAsObject());
-  stmt.free(); return rows;
-}
+function get(sql, params = []) { const stmt = db.prepare(sql); stmt.bind(params); if (stmt.step()) { const row = stmt.getAsObject(); stmt.free(); return row; } stmt.free(); return null; }
+function all(sql, params = []) { const stmt = db.prepare(sql); stmt.bind(params); const rows = []; while (stmt.step()) rows.push(stmt.getAsObject()); stmt.free(); return rows; }
 
 async function initDb() {
   const SQL = await initSqlJs();
@@ -50,12 +31,16 @@ async function initDb() {
   db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', delivery_method TEXT, address TEXT, payment_method TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 
+  // AUTO-MIGRATION (Aman & Ga Bikin Server Crash)
   try { db.run("SELECT brand FROM products LIMIT 1"); } catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); }
-  try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } 
-  catch {
-    db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT");
-    db.run("ALTER TABLE transactions ADD COLUMN address TEXT");
-    db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT");
+  try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } catch { db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT"); db.run("ALTER TABLE transactions ADD COLUMN address TEXT"); db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT"); }
+  try { db.run("SELECT booking_time FROM queues LIMIT 1"); } catch {
+    db.run("ALTER TABLE queues ADD COLUMN phone TEXT");
+    db.run("ALTER TABLE queues ADD COLUMN nopol TEXT");
+    db.run("ALTER TABLE queues ADD COLUMN rangka TEXT");
+    db.run("ALTER TABLE queues ADD COLUMN vehicle_details TEXT");
+    db.run("ALTER TABLE queues ADD COLUMN booking_date TEXT");
+    db.run("ALTER TABLE queues ADD COLUMN booking_time TEXT");
   }
 
   if (!get("SELECT id FROM users WHERE role='admin'")) {
@@ -90,124 +75,63 @@ async function initDb() {
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token' });
-  try { req.user = jwt.verify(token, JWT_SECRET); next(); }
-  catch { res.status(401).json({ error: 'Invalid token' }); }
+  try { req.user = jwt.verify(token, JWT_SECRET); next(); } catch { res.status(401).json({ error: 'Invalid token' }); }
 };
 const adminMiddleware = (req, res, next) => {
-  authMiddleware(req, res, () => {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
-    next();
-  });
+  authMiddleware(req, res, () => { if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' }); next(); });
 };
 
-app.post('/api/register', (req, res) => {
-  const { name, email, password, vehicle_type } = req.body;
-  if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
-  if (get("SELECT id FROM users WHERE email=?", [email])) return res.status(400).json({ error: 'Email sudah terdaftar' });
-  try {
-    const hash = bcrypt.hashSync(password, 10);
-    const now = new Date().toISOString();
-    run("INSERT INTO users (name,email,password,vehicle_type,created_at) VALUES (?,?,?,?,?)", [name,email,hash,vehicle_type||null,now]);
-    const u = get("SELECT * FROM users WHERE email=?", [email]);
-    const token = jwt.sign({ id:u.id, email, role:'pelanggan', name }, JWT_SECRET, { expiresIn:'7d' });
-    res.json({ token, user:{ id:u.id, name, email, role:'pelanggan' } });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-  const u = get("SELECT * FROM users WHERE email=?", [email]);
-  if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' });
-  const token = jwt.sign({ id:u.id, email:u.email, role:u.role, name:u.name }, JWT_SECRET, { expiresIn:'7d' });
-  res.json({ token, user:{ id:u.id, name:u.name, email:u.email, role:u.role } });
-});
-
+// --- AUTH & PRODUCTS ---
+app.post('/api/register', (req, res) => { const { name, email, password, vehicle_type } = req.body; if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' }); if (get("SELECT id FROM users WHERE email=?", [email])) return res.status(400).json({ error: 'Email sudah terdaftar' }); try { const hash = bcrypt.hashSync(password, 10); run("INSERT INTO users (name,email,password,vehicle_type,created_at) VALUES (?,?,?,?,?)", [name,email,hash,vehicle_type||null,new Date().toISOString()]); const u = get("SELECT * FROM users WHERE email=?", [email]); const token = jwt.sign({ id:u.id, email, role:'pelanggan', name }, JWT_SECRET, { expiresIn:'7d' }); res.json({ token, user:{ id:u.id, name, email, role:'pelanggan' } }); } catch(e) { res.status(500).json({ error: e.message }); } });
+app.post('/api/login', (req, res) => { const { email, password } = req.body; const u = get("SELECT * FROM users WHERE email=?", [email]); if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' }); const token = jwt.sign({ id:u.id, email:u.email, role:u.role, name:u.name }, JWT_SECRET, { expiresIn:'7d' }); res.json({ token, user:{ id:u.id, name:u.name, email:u.email, role:u.role } }); });
 app.get('/api/me', authMiddleware, (req, res) => { res.json(get("SELECT id,name,email,role,vehicle_type FROM users WHERE id=?", [req.user.id])); });
-
-app.get('/api/products', (req, res) => {
-  const { search, category } = req.query;
-  let sql = "SELECT * FROM products WHERE 1=1"; const p = [];
-  if (search) { sql += " AND (name LIKE ? OR description LIKE ?)"; p.push(`%${search}%`,`%${search}%`); }
-  if (category) { sql += " AND category=?"; p.push(category); }
-  sql += " ORDER BY created_at DESC";
-  res.json(all(sql, p));
-});
-
-app.post('/api/products', adminMiddleware, (req, res) => {
-  const { name, category, price, stock, description, brand, image_url } = req.body;
-  try {
-    run("INSERT INTO products (name,category,price,stock,description,brand,image_url,created_at) VALUES (?,?,?,?,?,?,?,?)",
-      [name,category,+price,+stock||0,description||'',brand||'',image_url||'🔧',new Date().toISOString()]);
-    res.json({success:true});
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.put('/api/products/:id', adminMiddleware, (req, res) => {
-  const { name, category, price, stock, description, brand, image_url } = req.body;
-  try {
-    run("UPDATE products SET name=?,category=?,price=?,stock=?,description=?,brand=?,image_url=? WHERE id=?",
-      [name,category,+price,+stock,description||'',brand||'',image_url||'🔧',req.params.id]);
-    res.json({success:true});
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
+app.get('/api/products', (req, res) => { const { search, category } = req.query; let sql = "SELECT * FROM products WHERE 1=1"; const p = []; if (search) { sql += " AND (name LIKE ? OR description LIKE ?)"; p.push(`%${search}%`,`%${search}%`); } if (category) { sql += " AND category=?"; p.push(category); } sql += " ORDER BY created_at DESC"; res.json(all(sql, p)); });
+app.post('/api/products', adminMiddleware, (req, res) => { const { name, category, price, stock, description, brand, image_url } = req.body; try { run("INSERT INTO products (name,category,price,stock,description,brand,image_url,created_at) VALUES (?,?,?,?,?,?,?,?)", [name,category,+price,+stock||0,description||'',brand||'',image_url||'🔧',new Date().toISOString()]); res.json({success:true}); } catch(e) { res.status(500).json({ error: e.message }); } });
+app.put('/api/products/:id', adminMiddleware, (req, res) => { const { name, category, price, stock, description, brand, image_url } = req.body; try { run("UPDATE products SET name=?,category=?,price=?,stock=?,description=?,brand=?,image_url=? WHERE id=?", [name,category,+price,+stock,description||'',brand||'',image_url||'🔧',req.params.id]); res.json({success:true}); } catch(e) { res.status(500).json({ error: e.message }); } });
 app.delete('/api/products/:id', adminMiddleware, (req, res) => { run("DELETE FROM products WHERE id=?", [req.params.id]); res.json({ success:true }); });
 
-app.post('/api/transactions', authMiddleware, (req, res) => {
-  const { product_id, quantity=1 } = req.body;
-  const prod = get("SELECT * FROM products WHERE id=?", [product_id]);
-  if (!prod) return res.status(404).json({ error: 'Produk tidak ditemukan' });
-  try {
-    run("INSERT INTO transactions (user_id,product_id,quantity,total_price,status,created_at) VALUES (?,?,?,?,'Tertunda',?)",
-      [req.user.id,product_id,quantity,prod.price * quantity,new Date().toISOString()]);
-    res.json({ success:true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => {
-  const { delivery_method, address, payment_method, extra_fee } = req.body;
-  const pendingTxs = all("SELECT * FROM transactions WHERE user_id=? AND status='Tertunda'", [req.user.id]);
-  if (pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang kosong.' });
-  try {
-    let isFeeApplied = false;
-    for (let tx of pendingTxs) {
-       let finalPrice = tx.total_price;
-       if (!isFeeApplied) { finalPrice += (extra_fee || 0); isFeeApplied = true; }
-       run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?",
-         [delivery_method, address, payment_method, finalPrice, tx.id]);
-       run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]);
-    }
-    res.json({ success:true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
+// --- TRANSACTIONS ---
+app.post('/api/transactions', authMiddleware, (req, res) => { if (req.user.role === 'admin') return res.status(403).json({ error: 'Admin tidak dapat membeli' }); const { product_id, quantity=1 } = req.body; const prod = get("SELECT * FROM products WHERE id=?", [product_id]); if (!prod) return res.status(404).json({ error: 'Produk tidak ditemukan' }); try { run("INSERT INTO transactions (user_id,product_id,quantity,total_price,status,created_at) VALUES (?,?,?,?,'Tertunda',?)", [req.user.id,product_id,quantity,prod.price * quantity,new Date().toISOString()]); res.json({ success:true }); } catch(e) { res.status(500).json({ error: e.message }); } });
+app.put('/api/transactions/checkout-cart', authMiddleware, (req, res) => { const { delivery_method, address, payment_method, extra_fee } = req.body; const pendingTxs = all("SELECT * FROM transactions WHERE user_id=? AND status='Tertunda'", [req.user.id]); if (pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang kosong.' }); try { let isFeeApplied = false; for (let tx of pendingTxs) { let finalPrice = tx.total_price; if (!isFeeApplied) { finalPrice += (extra_fee || 0); isFeeApplied = true; } run("UPDATE transactions SET status='Lunas', delivery_method=?, address=?, payment_method=?, total_price=? WHERE id=?", [delivery_method, address, payment_method, finalPrice, tx.id]); run("UPDATE products SET stock=stock-? WHERE id=?", [tx.quantity, tx.product_id]); } res.json({ success:true }); } catch(e) { res.status(500).json({ error: e.message }); } });
 app.delete('/api/transactions/:id', authMiddleware, (req, res) => { run("DELETE FROM transactions WHERE id=? AND user_id=? AND status='Tertunda'", [req.params.id, req.user.id]); res.json({ success:true }); });
 app.get('/api/transactions/my', authMiddleware, (req, res) => { res.json(all(`SELECT t.*, p.name as product_name, p.category, p.image_url FROM transactions t JOIN products p ON t.product_id=p.id WHERE t.user_id=? ORDER BY t.created_at DESC`, [req.user.id])); });
 app.get('/api/transactions/all', adminMiddleware, (req, res) => { res.json(all(`SELECT t.*, p.name as product_name, u.name as user_name, u.email FROM transactions t JOIN products p ON t.product_id=p.id JOIN users u ON t.user_id=u.id ORDER BY t.created_at DESC`, [])); });
 
+// ─── 🚀 REVISI QUEUES: CEK JAM & SIMPAN DATA FULL ───
+app.get('/api/queues/booked-times', (req, res) => {
+  const { date } = req.query;
+  const booked = all("SELECT booking_time FROM queues WHERE booking_date=? AND status != 'selesai'", [date]);
+  res.json(booked.map(b => b.booking_time));
+});
+
 app.post('/api/queues', authMiddleware, (req, res) => {
-  const { service_type } = req.body;
+  const { service_type, phone, nopol, rangka, vehicle_details, booking_date, booking_time } = req.body;
+  if (!booking_date || !booking_time) return res.status(400).json({ error: "Tanggal dan jam servis wajib diisi." });
+
+  const check = get("SELECT id FROM queues WHERE booking_date=? AND booking_time=? AND status != 'selesai'", [booking_date, booking_time]);
+  if (check) return res.status(400).json({ error: "Jadwal pada jam tersebut sudah penuh. Silakan pilih jam lain." });
+
   const today = new Date().toISOString().split('T')[0];
   const countRow = get("SELECT COUNT(*) as c FROM queues WHERE date(created_at) = ?", [today]);
-  run("INSERT INTO queues (user_id, service_type, queue_number, status, created_at) VALUES (?, ?, ?, 'menunggu', ?)", [req.user.id, service_type, (countRow?.c || 0) + 1, new Date().toISOString()]);
-  res.json({ success: true, queue: { queue_number: (countRow?.c || 0) + 1 } });
+  const queueNumber = (countRow?.c || 0) + 1;
+  
+  run("INSERT INTO queues (user_id, service_type, queue_number, status, phone, nopol, rangka, vehicle_details, booking_date, booking_time, created_at) VALUES (?, ?, ?, 'menunggu', ?, ?, ?, ?, ?, ?, ?)", 
+    [req.user.id, service_type, queueNumber, phone, nopol, rangka, vehicle_details, booking_date, booking_time, new Date().toISOString()]);
+  
+  res.json({ success: true, queue: { queue_number: queueNumber } });
 });
+
 app.get('/api/queues/my', authMiddleware, (req, res) => { res.json(all("SELECT * FROM queues WHERE user_id=? ORDER BY created_at DESC", [req.user.id])); });
-app.get('/api/queues/all', adminMiddleware, (req, res) => { res.json(all(`SELECT q.*, u.name as user_name, u.email, u.vehicle_type FROM queues q JOIN users u ON q.user_id=u.id ORDER BY q.created_at DESC`, [])); });
+app.get('/api/queues/all', adminMiddleware, (req, res) => { res.json(all(`SELECT q.*, u.name as user_name, u.email FROM queues q JOIN users u ON q.user_id=u.id ORDER BY q.created_at DESC`, [])); });
 app.put('/api/queues/:id/status', adminMiddleware, (req, res) => { run("UPDATE queues SET status=? WHERE id=?", [req.body.status, req.params.id]); res.json({ success: true }); });
 
-// API AI GROQ (Model Llama-3.1-8b-instant)
+// --- GROQ AI ---
 app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   const { complaint } = req.body;
   if (!complaint) return res.status(400).json({ error: 'Keluhan tidak boleh kosong' });
-
   const products = all("SELECT name FROM products", []);
   const productList = products.map(p => p.name).join(', ');
-
-  const systemPrompt = `Kamu adalah Kepala Mekanik AI di "SIM-Bengkel". Tugasmu: Analisis keluhan kendaraan pelanggan.
-Berikan HANYA output JSON murni tanpa markdown:
-{ "diagnosis": "Penjelasan penyebab.", "priority": "Tinggi / Sedang / Rendah", "action": "Langkah pertama.", "recommended_parts": ["Sparepart relevan"] }
-Sparepart yang kami jual: ${productList}. Sarankan dari daftar ini.`;
+  const systemPrompt = `Kamu Kepala Mekanik AI SIM-Bengkel. Analisis keluhan. Beri JSON murni: {"diagnosis":"Penjelasan", "priority":"Tinggi/Sedang/Rendah", "action":"Langkah pertama", "recommended_parts":["Sparepart relevan dari: ${productList}"]}`;
 
   try {
     const groqKey = process.env.GROQ_API_KEY;
@@ -247,6 +171,4 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
 
-initDb().then(() => {
-  app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
-}).catch(err => { console.error('DB init failed:', err); process.exit(1); });
+initDb().then(() => { app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); }); }).catch(err => { console.error('DB init failed:', err); process.exit(1); });

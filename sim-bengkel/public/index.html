@@ -4,63 +4,45 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIM-Bengkel — Workshop OS</title>
-  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    :root {
-      --bg-main: #020617; --bg-card: #0f172a;
-      --primary: #f97316; --primary-hover: #ea580c;
-      --text-main: #f8fafc; --text-muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.08);
-    }
-    
+    :root { --bg-main: #020617; --bg-card: #0f172a; --primary: #f97316; --primary-hover: #ea580c; --text-main: #f8fafc; --text-muted: #94a3b8; --border: rgba(255, 255, 255, 0.08); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
     h1, h2, h3, .brand { font-family: 'Plus Jakarta Sans', sans-serif; }
-
-    /* NAVBAR */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; }
     .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: #fff; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif; }
     .logo-icon { background: var(--primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 1.1rem; }
     .nav-links { display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: 0.3s; }
     .nav-links a:hover { color: #fff; }
-    
     .nav-actions { display: flex; align-items: center; gap: 15px; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-decoration: none; }
     .btn-outline:hover { background: rgba(255,255,255,0.05); }
     .btn-primary { background: var(--primary); color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-decoration: none; }
     .btn-primary:hover { background: var(--primary-hover); }
 
-    /* HERO SECTION */
     .hero { min-height: 100vh; display: flex; align-items: center; padding: 120px 5% 60px; gap: 40px; overflow: hidden; }
     .hero-text { flex: 1.2; z-index: 2; }
     .hero-image { flex: 1; position: relative; z-index: 1; }
-    
     .badge-top { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem; font-weight: 500;}
     .badge-top span { color: var(--primary); }
-
     .hero h1 { font-size: clamp(3rem, 5.5vw, 5rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.5rem; color: #fff; }
     .text-underline { position: relative; display: inline-block; }
     .text-underline::after { content: ''; position: absolute; bottom: 8px; left: 0; width: 100%; height: 6px; background: var(--primary); z-index: -1; opacity: 0.8; }
-
     .hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 550px; line-height: 1.7; margin-bottom: 2.5rem; }
     .hero-buttons { display: flex; gap: 15px; flex-wrap: wrap;}
     .hero-img-container { width: 100%; height: auto; border-radius: 24px; overflow: hidden; position: relative;}
     .hero-img-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, transparent 70%); z-index: -1; filter: blur(40px); }
     .parallax-car { width: 100%; border-radius: 16px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8); }
 
-    /* CATALOG SECTION (DENGAN FILTER & SEARCH) */
     .catalog { padding: 6rem 5%; background: var(--bg-main); text-align: center; }
     .catalog-header { margin-bottom: 3rem; }
     .catalog-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
     .catalog-header p { color: var(--text-muted); font-size: 1.05rem; }
-
-    /* BARU: CSS Filter Bar ala Figma */
     .filter-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; align-items: center; }
     .filter-search { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; color: #fff; font-size: 0.95rem; outline: none; width: 280px; font-family: 'Inter', sans-serif; transition: 0.3s; }
     .filter-search:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
@@ -74,24 +56,19 @@
     .p-img { width: 100%; height: 240px; background: #000; overflow: hidden; }
     .p-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
     .product-card:hover .p-img img { transform: scale(1.05); }
-    
     .p-content { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
     .p-badge { display: inline-block; border: 1px solid rgba(249, 115, 22, 0.5); color: var(--primary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 100px; margin-bottom: 1rem; align-self: flex-start; }
     .p-title { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem; line-height: 1.4; flex-grow: 1; }
-    
     .p-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1.25rem; }
     .p-price { font-weight: 800; font-size: 1.25rem; color: var(--primary); font-family: 'Plus Jakarta Sans', sans-serif; }
-    
     .btn-cart-icon { background: var(--primary); color: #fff; width: 42px; height: 42px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
     .btn-cart-icon:hover { background: var(--primary-hover); transform: scale(1.05); }
 
-    /* CTA SECTION */
     .cta-section { padding: 4rem 5% 6rem; background: var(--bg-main); }
     .cta-box { max-width: 900px; margin: 0 auto; background: linear-gradient(145deg, #1e1b18 0%, #0a0a0a 100%); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 24px; padding: 4rem 2rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .cta-box h2 { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
     .cta-box p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
     
-    /* FOOTER */
     footer { background: var(--bg-main); border-top: 1px solid var(--border); padding: 5rem 5% 3rem; }
     .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 3rem; max-width: 1200px; margin: 0 auto; }
     .f-brand { display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
@@ -105,7 +82,6 @@
     .f-contact p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
     .f-contact strong { color: #fff; }
 
-    /* MODAL & TOAST */
     .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;}
     .modal-overlay.active { opacity: 1; pointer-events: all; }
     .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; max-height: 90vh; overflow-y: auto;}
@@ -121,35 +97,27 @@
     .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem; }
     .form-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif; transition: 0.2s; }
     .form-input:focus { border-color: var(--primary); }
+    select.form-input option { background: var(--bg-main); color: #fff; }
 
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.5rem; z-index: 300; transform: translateY(100px); opacity: 0; transition: 0.4s; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .toast.show { transform: translateY(0); opacity: 1; }
 
-    @media (max-width: 1024px) {
-      .hero { flex-direction: column; text-align: center; padding-top: 140px; }
-      .nav-links { display: none; }
-      .hero p { margin-left: auto; margin-right: auto; }
-      .hero-buttons { justify-content: center; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
-    }
+    @media (max-width: 1024px) { .hero { flex-direction: column; text-align: center; padding-top: 140px; } .nav-links { display: none; } .hero p { margin-left: auto; margin-right: auto; } .hero-buttons { justify-content: center; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } .booking-grid { grid-template-columns: 1fr; gap: 1rem; } }
   </style>
 </head>
 <body>
 
 <nav>
   <a href="/" class="nav-logo"><div class="logo-icon">🔧</div>SIM-Bengkel</a>
-  <div class="nav-links">
-    <a href="#hero">Beranda</a>
-    <a href="#catalog">Suku Cadang</a>
-    <a href="#cta">Layanan</a>
-  </div>
+  <div class="nav-links"><a href="#hero">Beranda</a><a href="#catalog">Suku Cadang</a><a href="#cta">Layanan</a></div>
   <div class="nav-actions">
     <a href="/dashboard" class="btn-outline" id="btnDash" style="display:none; border-color:var(--primary); color:var(--primary);">🛒 Keranjang</a>
     <div id="navGuest">
       <a href="/login" class="btn-outline" style="border:none;">Masuk</a>
       <a href="/register" class="btn-primary">Daftar</a>
     </div>
-    <button class="btn-outline" onclick="location.href='/dashboard'" id="navUser" style="display:none;">Dashboard</button>
+    <button class="btn-outline" id="navUser" style="display:none;"></button>
   </div>
 </nav>
 
@@ -175,7 +143,6 @@
     <div class="catalog-header">
       <h2>Suku Cadang Premium</h2>
       <p>Produk berkualitas dengan harga kompetitif</p>
-      
       <div class="filter-bar">
         <input type="text" class="filter-search" id="searchInput" placeholder="Cari sparepart..." oninput="filterProducts()" />
         <button class="filter-chip active" onclick="filterCategory(this, '')">Semua</button>
@@ -187,10 +154,7 @@
         <button class="filter-chip" onclick="filterCategory(this, 'Lampu')">Lampu</button>
       </div>
     </div>
-
-    <div class="product-grid" id="productGrid">
-      <div style="grid-column:1/-1; padding:4rem; color:var(--text-muted);">Memuat produk...</div>
-    </div>
+    <div class="product-grid" id="productGrid"><div style="grid-column:1/-1; padding:4rem; color:var(--text-muted);">Memuat produk...</div></div>
   </div>
 </section>
 
@@ -212,19 +176,26 @@
         <div class="form-group"><label class="form-label">Nama Lengkap</label><input type="text" class="form-input" id="bookName" placeholder="Masukkan nama..." readonly style="opacity: 0.7;" /></div>
         <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="bookEmail" placeholder="nama@email.com" readonly style="opacity: 0.7;" /></div>
         <div class="form-group"><label class="form-label">No. Handphone</label><input type="text" class="form-input" id="bookPhone" placeholder="08123456789" /></div>
-        <div class="form-group"><label class="form-label">Nomor Rangka</label><input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." /></div>
+        <div class="form-group"><label class="form-label">Nomor Rangka (17 digit)</label><input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." /></div>
       </div>
       <div>
         <div class="section-label">DATA KENDARAAN & LAYANAN</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div class="form-group"><label class="form-label">Model</label><select class="form-input"><option>Pilih Model</option><option>Matic</option><option>Manual</option></select></div>
-          <div class="form-group"><label class="form-label">Tipe</label><select class="form-input"><option>Standar</option><option>Premium</option></select></div>
+          <div class="form-group"><label class="form-label">Model</label><select class="form-input" id="bookModel"><option value="Matic">Matic</option><option value="Manual">Manual</option><option value="Sedan">Sedan</option><option value="SUV">SUV</option></select></div>
+          <div class="form-group"><label class="form-label">Tipe</label><select class="form-input" id="bookTipe"><option value="Standar">Standar</option><option value="Premium">Premium</option></select></div>
         </div>
-        <div class="form-group"><label class="form-label">No. Polisi</label><input type="text" class="form-input" placeholder="B 1234 ABC" /></div>
-        <div class="form-group"><label class="form-label">Pilih Layanan Utama</label><select id="washServiceType" class="form-input"><option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option><option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option></select></div>
+        <div class="form-group"><label class="form-label">No. Polisi</label><input type="text" class="form-input" id="bookNopol" placeholder="B 1234 ABC" /></div>
+        <div class="form-group"><label class="form-label">Pilih Layanan Utama</label><select id="washServiceType" class="form-input"><option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option><option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option><option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option><option value="Pengecekan Kaki-Kaki">Pengecekan Kaki-kaki & Suspensi</option></select></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-          <div class="form-group" style="margin: 0;"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="bookDate" /></div>
-          <div class="form-group" style="margin: 0;"><label class="form-label">Jam</label><select class="form-input"><option>09:00 - 10:00</option><option>10:00 - 11:00</option></select></div>
+          <div class="form-group" style="margin: 0;"><label class="form-label">Tanggal Servis</label><input type="date" class="form-input" id="bookDate" /></div>
+          <div class="form-group" style="margin: 0;"><label class="form-label">Jam Servis</label>
+            <select class="form-input" id="bookTime">
+              <option value="09:00 - 10:00">09:00 - 10:00</option>
+              <option value="10:00 - 11:00">10:00 - 11:00</option>
+              <option value="13:00 - 14:00">13:00 - 14:00</option>
+              <option value="15:00 - 16:00">15:00 - 16:00</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -260,8 +231,8 @@
 </footer>
 
 <div class="toast" id="toast">
-  <div style="font-size:1.8rem">🛒</div>
-  <div><div style="font-weight:700; color:#fff; font-size:1rem;">Masuk Keranjang!</div><div style="font-size:0.85rem; color:var(--text-muted)">Silakan buka dashboard untuk bayar.</div></div>
+  <div style="font-size:1.8rem" id="toastIcon">🛒</div>
+  <div><div style="font-weight:700; color:#fff; font-size:1rem;" id="toastTitle">Berhasil!</div><div style="font-size:0.85rem; color:var(--text-muted)" id="toastMsg">Notifikasi</div></div>
 </div>
 
 <script>
@@ -271,10 +242,21 @@
   const user = JSON.parse(localStorage.getItem('sb_user') || 'null');
 
   window.addEventListener('DOMContentLoaded', () => {
+    // 🚀 CEGAH ADMIN KEDIP / TAMPILAN KHUSUS ADMIN 🚀
     if (token && user) {
       document.getElementById('navGuest').style.display = 'none';
-      document.getElementById('navUser').style.display = 'flex';
-      document.getElementById('btnDash').style.display = 'flex';
+      const navUser = document.getElementById('navUser');
+      navUser.style.display = 'flex';
+      
+      if (user.role === 'admin') {
+        navUser.textContent = 'Admin Panel';
+        navUser.setAttribute('onclick', "location.href='/admin'");
+        document.getElementById('btnDash').style.display = 'none'; // Sembunyiin Keranjang buat Admin
+      } else {
+        navUser.textContent = 'Dashboard';
+        navUser.setAttribute('onclick', "location.href='/dashboard'");
+        document.getElementById('btnDash').style.display = 'flex';
+      }
       
       document.getElementById('ctaTitle').textContent = 'Kendaraan Anda butuh perawatan?';
       document.getElementById('ctaDesc').textContent = 'Jangan tunggu sampai rusak. Segera jadwalkan servis kendaraan Anda hari ini juga.';
@@ -292,6 +274,29 @@
     gsap.to(".parallax-car", { y: 60, scale: 1.1, scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1.2 } });
   });
 
+  // 🚀 CEK JAM PENUH 🚀
+  document.getElementById('bookDate').addEventListener('change', async function() {
+    if(!this.value) return;
+    try {
+      const res = await fetch('/api/queues/booked-times?date=' + this.value);
+      const bookedTimes = await res.json();
+      const timeSelect = document.getElementById('bookTime');
+      
+      Array.from(timeSelect.options).forEach(opt => {
+        if (bookedTimes.includes(opt.value)) {
+          opt.disabled = true;
+          opt.text = opt.value + " (Penuh)";
+          opt.style.color = "red";
+        } else {
+          opt.disabled = false;
+          opt.text = opt.value;
+          opt.style.color = "#fff";
+        }
+      });
+      timeSelect.value = Array.from(timeSelect.options).find(o => !o.disabled)?.value || '';
+    } catch(e) { console.log(e); }
+  });
+
   async function loadProducts() {
     try {
       const res = await fetch('/api/products');
@@ -300,7 +305,6 @@
     } catch (e) { document.getElementById('productGrid').innerHTML = '<p style="color:red;">Gagal memuat produk.</p>'; }
   }
 
-  // LOGIKA SEARCH & FILTER BALIK LAGI
   function filterCategory(el, cat) {
     currentCategory = cat;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -318,25 +322,15 @@
 
   function renderProducts(products) {
     const grid = document.getElementById('productGrid');
-    if (products.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1; padding:4rem; color:var(--text-muted); text-align:center;">Tidak ada produk yang cocok.</div>';
-        return;
-    }
+    if (products.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1; padding:4rem; color:var(--text-muted); text-align:center;">Tidak ada produk yang cocok.</div>'; return; }
     grid.innerHTML = products.map(p => `
       <div class="product-card">
         <div class="p-img">
-          ${p.image_url.startsWith('http') 
-            ? `<img src="${p.image_url}" onerror="this.src='https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=500'" alt="${p.name}">` 
-            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#1e293b;">${p.image_url}</div>`}
+          ${p.image_url.startsWith('http') ? `<img src="${p.image_url}" onerror="this.src='https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=500'" alt="${p.name}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;background:#1e293b;">${p.image_url}</div>`}
         </div>
-        <div class="p-content">
-          <span class="p-badge">${p.category}</span>
-          <h3 class="p-title">${p.name}</h3>
-          <div class="p-footer">
-            <span class="p-price">Rp ${p.price.toLocaleString('id-ID')}</span>
-            <button class="btn-cart-icon" onclick="addToCart(${p.id})" title="Masukkan Keranjang">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-            </button>
+        <div class="p-content"><span class="p-badge">${p.category}</span><h3 class="p-title">${p.name}</h3>
+          <div class="p-footer"><span class="p-price">Rp ${p.price.toLocaleString('id-ID')}</span>
+            <button class="btn-cart-icon" onclick="addToCart(${p.id})" title="Masukkan Keranjang"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
           </div>
         </div>
       </div>
@@ -348,32 +342,56 @@
 
   function openWashModal() {
     if (!token || !user) { openModal('authModal'); return; }
+    if (user.role === 'admin') { alert('Admin tidak perlu booking servis.'); return; }
     document.getElementById('bookName').value = user.name || '';
     document.getElementById('bookEmail').value = user.email || '';
     openModal('washModal');
+    document.getElementById('bookDate').dispatchEvent(new Event('change')); // Trigger fetch jam
   }
 
   async function confirmWash() {
     const serviceType = document.getElementById('washServiceType').value;
     const phone = document.getElementById('bookPhone').value.trim();
-    if(!phone) { alert('Nomor Handphone wajib diisi.'); return; }
+    const nopol = document.getElementById('bookNopol').value.trim();
+    const rangka = document.getElementById('bookRangka').value.trim();
+    const model = document.getElementById('bookModel').value;
+    const tipe = document.getElementById('bookTipe').value;
+    const date = document.getElementById('bookDate').value;
+    const time = document.getElementById('bookTime').value;
+
+    if(!phone || !nopol || !date || !time) { alert('Data (No HP, No Polisi, Tanggal, Jam) wajib diisi.'); return; }
+
     closeModal('washModal');
     try {
-      const res = await fetch('/api/queues', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ service_type: serviceType }) });
+      const res = await fetch('/api/queues', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+        body: JSON.stringify({ 
+          service_type: serviceType, phone, nopol, rangka, 
+          vehicle_details: `${model} - ${tipe}`, booking_date: date, booking_time: time 
+        }) 
+      });
       const data = await res.json();
-      if (res.ok) { alert(`Booking Berhasil! Silakan datang sesuai jadwal. No. Antrean: ${data.queue.queue_number}`); } 
+      if (res.ok) { 
+        document.getElementById('toastIcon').textContent = '🎟️';
+        document.getElementById('toastTitle').textContent = 'Booking Diterima';
+        document.getElementById('toastMsg').textContent = `Jadwal ${date} jam ${time} berhasil dibooking. No: ${data.queue.queue_number}`;
+        const t = document.getElementById('toast'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 5000);
+      } 
       else { alert('Gagal: ' + data.error); }
     } catch { alert('Koneksi terputus'); }
   }
 
   async function addToCart(id) {
     if (!token) { window.location.href='/login'; return; }
+    if (user.role === 'admin') { alert('Maaf bos admin, admin ga bisa belanja 😂'); return; }
     try {
       const res = await fetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ product_id: id, quantity: 1 }) });
       if (res.ok) {
-        const t = document.getElementById('toast');
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
+        document.getElementById('toastIcon').textContent = '🛒';
+        document.getElementById('toastTitle').textContent = 'Masuk Keranjang!';
+        document.getElementById('toastMsg').textContent = 'Silakan buka dashboard untuk bayar.';
+        const t = document.getElementById('toast'); t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
       }
     } catch (e) { console.error(e); }
   }
