@@ -12,42 +12,20 @@
 
   <style>
     :root {
-      --bg-main: #020617; /* Slate 950 */
-      --bg-card: #0f172a; /* Slate 900 */
-      --primary: #f97316; /* Orange 500 */
-      --primary-hover: #ea580c;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --bg-main: #020617; --bg-card: #0f172a;
+      --primary: #f97316; --primary-hover: #ea580c;
+      --text-main: #f8fafc; --text-muted: #94a3b8;
       --border: rgba(255, 255, 255, 0.08);
     }
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
-
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
     h1, h2, h3, .brand { font-family: 'Plus Jakarta Sans', sans-serif; }
 
     /* NAVBAR */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      height: 80px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 5%;
-    }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 1.4rem; color: #fff; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    .logo-icon {
-      background: var(--primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 1.1rem;
-    }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: #fff; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .logo-icon { background: var(--primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 1.1rem; }
     .nav-links { display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
     .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: 0.3s; }
     .nav-links a:hover { color: #fff; }
@@ -71,60 +49,45 @@
     .text-underline::after { content: ''; position: absolute; bottom: 8px; left: 0; width: 100%; height: 6px; background: var(--primary); z-index: -1; opacity: 0.8; }
 
     .hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 550px; line-height: 1.7; margin-bottom: 2.5rem; }
-    
     .hero-buttons { display: flex; gap: 15px; flex-wrap: wrap;}
-    
     .hero-img-container { width: 100%; height: auto; border-radius: 24px; overflow: hidden; position: relative;}
     .hero-img-container::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, transparent 70%); z-index: -1; filter: blur(40px); }
     .parallax-car { width: 100%; border-radius: 16px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8); }
 
-    /* CATALOG SECTION */
+    /* CATALOG SECTION (DENGAN FILTER & SEARCH) */
     .catalog { padding: 6rem 5%; background: var(--bg-main); text-align: center; }
-    .catalog-header { margin-bottom: 4rem; }
+    .catalog-header { margin-bottom: 3rem; }
     .catalog-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
     .catalog-header p { color: var(--text-muted); font-size: 1.05rem; }
 
+    /* BARU: CSS Filter Bar ala Figma */
+    .filter-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; align-items: center; }
+    .filter-search { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; color: #fff; font-size: 0.95rem; outline: none; width: 280px; font-family: 'Inter', sans-serif; transition: 0.3s; }
+    .filter-search:focus { border-color: var(--primary); background: rgba(255,255,255,0.06); }
+    .filter-chip { padding: 8px 18px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .filter-chip:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .filter-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
     .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; text-align: left; }
-    .product-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden; transition: 0.3s;
-      display: flex; flex-direction: column;
-    }
+    .product-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
     .product-card:hover { border-color: rgba(249, 115, 22, 0.5); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
     .p-img { width: 100%; height: 240px; background: #000; overflow: hidden; }
     .p-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
     .product-card:hover .p-img img { transform: scale(1.05); }
     
     .p-content { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
-    .p-badge {
-      display: inline-block; border: 1px solid rgba(249, 115, 22, 0.5); color: var(--primary);
-      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 4px 10px; border-radius: 100px; margin-bottom: 1rem; align-self: flex-start;
-    }
+    .p-badge { display: inline-block; border: 1px solid rgba(249, 115, 22, 0.5); color: var(--primary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 100px; margin-bottom: 1rem; align-self: flex-start; }
     .p-title { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem; line-height: 1.4; flex-grow: 1; }
     
     .p-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1.25rem; }
     .p-price { font-weight: 800; font-size: 1.25rem; color: var(--primary); font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    .btn-cart-icon {
-      background: var(--primary); color: #fff; width: 42px; height: 42px;
-      border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: 0.2s; font-size: 1.1rem;
-    }
+    .btn-cart-icon { background: var(--primary); color: #fff; width: 42px; height: 42px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
     .btn-cart-icon:hover { background: var(--primary-hover); transform: scale(1.05); }
-
-    .btn-view-all { background: transparent; border: 1px solid var(--border); color: #fff; padding: 12px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 3rem; display: inline-block; text-decoration: none; }
-    .btn-view-all:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
 
     /* CTA SECTION */
     .cta-section { padding: 4rem 5% 6rem; background: var(--bg-main); }
-    .cta-box {
-      max-width: 900px; margin: 0 auto;
-      background: linear-gradient(145deg, #1e1b18 0%, #0a0a0a 100%);
-      border: 1px solid rgba(249, 115, 22, 0.2);
-      border-radius: 24px; padding: 4rem 2rem; text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
+    .cta-box { max-width: 900px; margin: 0 auto; background: linear-gradient(145deg, #1e1b18 0%, #0a0a0a 100%); border: 1px solid rgba(249, 115, 22, 0.2); border-radius: 24px; padding: 4rem 2rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .cta-box h2 { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
     .cta-box p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
     
@@ -134,17 +97,15 @@
     .f-brand { display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
     .f-brand-icon { background: var(--primary); padding: 5px 8px; border-radius: 6px; font-size: 1rem; color: #fff; }
     .f-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 250px; }
-    
     .f-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem; }
     .f-links { list-style: none; }
     .f-links li { margin-bottom: 0.8rem; }
     .f-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
     .f-links a:hover { color: var(--primary); }
-    
     .f-contact p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
     .f-contact strong { color: #fff; }
 
-    /* MODAL UMUM */
+    /* MODAL & TOAST */
     .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;}
     .modal-overlay.active { opacity: 1; pointer-events: all; }
     .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 420px; transform: scale(0.95); transition: all 0.2s; text-align: left; max-height: 90vh; overflow-y: auto;}
@@ -153,17 +114,14 @@
     .modal-text { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem;}
     
-    /* MODAL BOOKING SERVIS */
     .modal-booking { max-width: 850px; padding: 2.5rem; }
     .booking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
     .section-label { font-size: 0.9rem; font-weight: 700; color: #fff; letter-spacing: 0.05em; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-    
     .form-group { margin-bottom: 1rem; }
     .form-label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem; }
     .form-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif; transition: 0.2s; }
     .form-input:focus { border-color: var(--primary); }
 
-    /* TOAST */
     .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--primary); border-radius: 12px; padding: 1rem 1.5rem; z-index: 300; transform: translateY(100px); opacity: 0; transition: 0.4s; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .toast.show { transform: translateY(0); opacity: 1; }
 
@@ -174,37 +132,24 @@
       .hero-buttons { justify-content: center; }
       .footer-grid { grid-template-columns: 1fr 1fr; }
     }
-    @media (max-width: 600px) {
-      .footer-grid { grid-template-columns: 1fr; }
-      .booking-grid { grid-template-columns: 1fr; gap: 1rem; }
-    }
   </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">
-    <div class="logo-icon">🔧</div>
-    SIM-Bengkel
-  </a>
-  
+  <a href="/" class="nav-logo"><div class="logo-icon">🔧</div>SIM-Bengkel</a>
   <div class="nav-links">
     <a href="#hero">Beranda</a>
     <a href="#catalog">Suku Cadang</a>
     <a href="#cta">Layanan</a>
   </div>
-
   <div class="nav-actions">
-    <a href="/dashboard" class="btn-outline" id="btnDash" style="display:none; border-color:var(--primary); color:var(--primary);">
-      🛒 Keranjang
-    </a>
+    <a href="/dashboard" class="btn-outline" id="btnDash" style="display:none; border-color:var(--primary); color:var(--primary);">🛒 Keranjang</a>
     <div id="navGuest">
       <a href="/login" class="btn-outline" style="border:none;">Masuk</a>
       <a href="/register" class="btn-primary">Daftar</a>
     </div>
-    <button class="btn-outline" onclick="location.href='/dashboard'" id="navUser" style="display:none;">
-      Dashboard
-    </button>
+    <button class="btn-outline" onclick="location.href='/dashboard'" id="navUser" style="display:none;">Dashboard</button>
   </div>
 </nav>
 
@@ -213,13 +158,11 @@
     <div class="badge-top"><span>✨</span> Didukung Sistem Rekomendasi AI</div>
     <h1>Servis kendaraan,<br><span class="text-underline">tanpa drama antrean.</span></h1>
     <p>Platform servis otomotif modern dengan booking online, suku cadang berkualitas, dan teknisi profesional. Pengalaman servis tanpa ribet.</p>
-    
     <div class="hero-buttons">
       <button onclick="openWashModal()" class="btn-primary" style="padding: 16px 32px; font-size: 1rem;">Booking Servis Sekarang</button>
       <button onclick="location.href='#catalog'" class="btn-outline" style="padding: 16px 32px; font-size: 1rem;">Lihat Katalog</button>
     </div>
   </div>
-
   <div class="hero-image">
     <div class="hero-img-container">
       <img src="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?q=80&w=1200&auto=format&fit=crop" alt="Mobil Sport Merah" class="parallax-car" />
@@ -230,17 +173,24 @@
 <section class="catalog" id="catalog">
   <div class="section-inner">
     <div class="catalog-header">
-      <div>
-        <h2>Suku Cadang Premium</h2>
-        <p>Produk berkualitas dengan harga kompetitif</p>
+      <h2>Suku Cadang Premium</h2>
+      <p>Produk berkualitas dengan harga kompetitif</p>
+      
+      <div class="filter-bar">
+        <input type="text" class="filter-search" id="searchInput" placeholder="Cari sparepart..." oninput="filterProducts()" />
+        <button class="filter-chip active" onclick="filterCategory(this, '')">Semua</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Oli Mesin')">Oli Mesin</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Rem')">Rem</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Filter')">Filter</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Aki')">Aki</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Aksesoris')">Aksesoris</button>
+        <button class="filter-chip" onclick="filterCategory(this, 'Lampu')">Lampu</button>
       </div>
     </div>
 
     <div class="product-grid" id="productGrid">
       <div style="grid-column:1/-1; padding:4rem; color:var(--text-muted);">Memuat produk...</div>
     </div>
-    
-    <a href="#catalog" class="btn-view-all">Lihat Semua Produk ➔</a>
   </div>
 </section>
 
@@ -256,84 +206,31 @@
   <div class="modal modal-booking">
     <div class="modal-title">Daftar Layanan Servis & Cuci</div>
     <div class="modal-text">Isi form di bawah ini untuk mendaftar servis kendaraan Anda. Nomor antrean akan otomatis digenerate.</div>
-    
     <div class="booking-grid">
       <div>
         <div class="section-label">DATA DIRI</div>
-        <div class="form-group">
-          <label class="form-label">Nama Lengkap</label>
-          <input type="text" class="form-input" id="bookName" placeholder="Masukkan nama..." readonly style="opacity: 0.7;" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" id="bookEmail" placeholder="nama@email.com" readonly style="opacity: 0.7;" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">No. Handphone</label>
-          <input type="text" class="form-input" id="bookPhone" placeholder="08123456789" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nomor Rangka (17 digit)</label>
-          <input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." />
-        </div>
+        <div class="form-group"><label class="form-label">Nama Lengkap</label><input type="text" class="form-input" id="bookName" placeholder="Masukkan nama..." readonly style="opacity: 0.7;" /></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="bookEmail" placeholder="nama@email.com" readonly style="opacity: 0.7;" /></div>
+        <div class="form-group"><label class="form-label">No. Handphone</label><input type="text" class="form-input" id="bookPhone" placeholder="08123456789" /></div>
+        <div class="form-group"><label class="form-label">Nomor Rangka</label><input type="text" class="form-input" id="bookRangka" placeholder="MHK123..." /></div>
       </div>
-
       <div>
         <div class="section-label">DATA KENDARAAN & LAYANAN</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div class="form-group">
-            <label class="form-label">Model</label>
-            <select class="form-input">
-              <option>Pilih Model</option>
-              <option>Matic</option>
-              <option>Manual</option>
-              <option>Sedan</option>
-              <option>SUV</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tipe</label>
-            <select class="form-input">
-              <option>Standar</option>
-              <option>Premium</option>
-            </select>
-          </div>
+          <div class="form-group"><label class="form-label">Model</label><select class="form-input"><option>Pilih Model</option><option>Matic</option><option>Manual</option></select></div>
+          <div class="form-group"><label class="form-label">Tipe</label><select class="form-input"><option>Standar</option><option>Premium</option></select></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">No. Polisi</label>
-          <input type="text" class="form-input" placeholder="B 1234 ABC" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Pilih Layanan Utama</label>
-          <select id="washServiceType" class="form-input">
-            <option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option>
-            <option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option>
-            <option value="Detailing Interior (Rp 150.000)">Detailing Interior — Rp 150.000</option>
-            <option value="Pengecekan Kaki-Kaki">Pengecekan Kaki-kaki & Suspensi</option>
-          </select>
-        </div>
+        <div class="form-group"><label class="form-label">No. Polisi</label><input type="text" class="form-input" placeholder="B 1234 ABC" /></div>
+        <div class="form-group"><label class="form-label">Pilih Layanan Utama</label><select id="washServiceType" class="form-input"><option value="Cuci Biasa (Rp 40.000)">Cuci Biasa — Rp 40.000</option><option value="Servis Ringan + Ganti Oli">Servis Ringan + Ganti Oli</option></select></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label">Tanggal Servis</label>
-            <input type="date" class="form-input" id="bookDate" />
-          </div>
-          <div class="form-group" style="margin: 0;">
-            <label class="form-label">Jam Servis</label>
-            <select class="form-input">
-              <option>09:00 - 10:00</option>
-              <option>10:00 - 11:00</option>
-              <option>13:00 - 14:00</option>
-              <option>15:00 - 16:00</option>
-            </select>
-          </div>
+          <div class="form-group" style="margin: 0;"><label class="form-label">Tanggal</label><input type="date" class="form-input" id="bookDate" /></div>
+          <div class="form-group" style="margin: 0;"><label class="form-label">Jam</label><select class="form-input"><option>09:00 - 10:00</option><option>10:00 - 11:00</option></select></div>
         </div>
       </div>
     </div>
-
     <div style="text-align: center; margin-top: 2rem;">
       <button class="btn-lg btn-primary" style="width: 100%; max-width: 400px; margin-bottom: 15px;" onclick="confirmWash()">BOOK SERVIS SEKARANG</button>
-      <br>
-      <button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif; font-size: 0.9rem;" onclick="closeModal('washModal')">Batalkan dan Kembali</button>
+      <br><button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-family:'Inter', sans-serif; font-size: 0.9rem;" onclick="closeModal('washModal')">Batalkan dan Kembali</button>
     </div>
   </div>
 </div>
@@ -353,63 +250,32 @@
 <footer>
   <div class="footer-grid">
     <div>
-      <div class="f-brand">
-        <div class="f-brand-icon">🔧</div>
-        SIM-Bengkel
-      </div>
+      <div class="f-brand"><div class="f-brand-icon">🔧</div>SIM-Bengkel</div>
       <p class="f-desc">Platform servis otomotif terpercaya di Indonesia dengan integrasi AI dan sistem e-commerce.</p>
     </div>
-    
-    <div>
-      <h3 class="f-title">Layanan</h3>
-      <ul class="f-links">
-        <li><a href="#">Servis Rutin</a></li>
-        <li><a href="#">Perbaikan</a></li>
-        <li><a href="#">Booking Online</a></li>
-      </ul>
-    </div>
-    
-    <div>
-      <h3 class="f-title">Perusahaan</h3>
-      <ul class="f-links">
-        <li><a href="#">Tentang Kami</a></li>
-        <li><a href="#">Karir</a></li>
-        <li><a href="#">Blog</a></li>
-      </ul>
-    </div>
-    
-    <div>
-      <h3 class="f-title">Kontak</h3>
-      <div class="f-contact">
-        <p>Email: <strong>info@simbengkel.com</strong></p>
-        <p>Tel: <strong>+62 812-3456-7890</strong></p>
-        <p>Bogor, Indonesia</p>
-      </div>
-    </div>
+    <div><h3 class="f-title">Layanan</h3><ul class="f-links"><li><a href="#">Servis Rutin</a></li><li><a href="#">Perbaikan</a></li><li><a href="#">Booking Online</a></li></ul></div>
+    <div><h3 class="f-title">Perusahaan</h3><ul class="f-links"><li><a href="#">Tentang Kami</a></li><li><a href="#">Karir</a></li><li><a href="#">Blog</a></li></ul></div>
+    <div><h3 class="f-title">Kontak</h3><div class="f-contact"><p>Email: <strong>info@simbengkel.com</strong></p><p>Tel: <strong>+62 812-3456-7890</strong></p><p>Bogor, Indonesia</p></div></div>
   </div>
 </footer>
 
 <div class="toast" id="toast">
   <div style="font-size:1.8rem">🛒</div>
-  <div>
-    <div style="font-weight:700; color:#fff; font-size:1rem;">Masuk Keranjang!</div>
-    <div style="font-size:0.85rem; color:var(--text-muted)">Silakan buka dashboard untuk bayar.</div>
-  </div>
+  <div><div style="font-weight:700; color:#fff; font-size:1rem;">Masuk Keranjang!</div><div style="font-size:0.85rem; color:var(--text-muted)">Silakan buka dashboard untuk bayar.</div></div>
 </div>
 
 <script>
   let allProducts = [];
+  let currentCategory = '';
   const token = localStorage.getItem('sb_token');
   const user = JSON.parse(localStorage.getItem('sb_user') || 'null');
 
   window.addEventListener('DOMContentLoaded', () => {
-    // REVISI 3: Tweak CTA & Navbar based on Login Status
     if (token && user) {
       document.getElementById('navGuest').style.display = 'none';
       document.getElementById('navUser').style.display = 'flex';
       document.getElementById('btnDash').style.display = 'flex';
       
-      // Ubah Teks & Tombol CTA jika user sudah punya akun
       document.getElementById('ctaTitle').textContent = 'Kendaraan Anda butuh perawatan?';
       document.getElementById('ctaDesc').textContent = 'Jangan tunggu sampai rusak. Segera jadwalkan servis kendaraan Anda hari ini juga.';
       const ctaBtn = document.getElementById('ctaBtn');
@@ -418,33 +284,44 @@
     }
     
     loadProducts();
-
-    // Set Default Date Booking Modal
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('bookDate').value = today;
 
-    // GSAP SCROLL ANIMATION
     gsap.registerPlugin(ScrollTrigger);
     gsap.from(".hero-text > *", { duration: 1, y: 30, opacity: 0, stagger: 0.15, ease: "power3.out" });
-    gsap.to(".parallax-car", {
-      y: 60, scale: 1.1,
-      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1.2 }
-    });
+    gsap.to(".parallax-car", { y: 60, scale: 1.1, scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1.2 } });
   });
 
   async function loadProducts() {
     try {
       const res = await fetch('/api/products');
       allProducts = await res.json();
-      // REVISI 4: Tampilkan SEMUA produk, hapus pembatasan slice()
       renderProducts(allProducts);
-    } catch (e) {
-      document.getElementById('productGrid').innerHTML = '<p style="color:red;">Gagal memuat produk.</p>';
-    }
+    } catch (e) { document.getElementById('productGrid').innerHTML = '<p style="color:red;">Gagal memuat produk.</p>'; }
+  }
+
+  // LOGIKA SEARCH & FILTER BALIK LAGI
+  function filterCategory(el, cat) {
+    currentCategory = cat;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    filterProducts();
+  }
+
+  function filterProducts() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = allProducts;
+    if (currentCategory) filtered = filtered.filter(p => p.category === currentCategory);
+    if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || (p.description || '').toLowerCase().includes(search));
+    renderProducts(filtered);
   }
 
   function renderProducts(products) {
     const grid = document.getElementById('productGrid');
+    if (products.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; padding:4rem; color:var(--text-muted); text-align:center;">Tidak ada produk yang cocok.</div>';
+        return;
+    }
     grid.innerHTML = products.map(p => `
       <div class="product-card">
         <div class="p-img">
@@ -466,7 +343,6 @@
     `).join('');
   }
 
-  // FUNGSI MODAL BOOKING (Kemarin Kelupaan Dimasukin 🙏)
   function openModal(id) { document.getElementById(id).classList.add('active'); }
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -481,30 +357,19 @@
     const serviceType = document.getElementById('washServiceType').value;
     const phone = document.getElementById('bookPhone').value.trim();
     if(!phone) { alert('Nomor Handphone wajib diisi.'); return; }
-
     closeModal('washModal');
     try {
-      const res = await fetch('/api/queues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ service_type: serviceType })
-      });
+      const res = await fetch('/api/queues', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ service_type: serviceType }) });
       const data = await res.json();
-      if (res.ok) { 
-        alert(`Booking Berhasil! Silakan datang sesuai jadwal. No. Antrean: ${data.queue.queue_number}`); 
-      } else { alert('Gagal: ' + data.error); }
+      if (res.ok) { alert(`Booking Berhasil! Silakan datang sesuai jadwal. No. Antrean: ${data.queue.queue_number}`); } 
+      else { alert('Gagal: ' + data.error); }
     } catch { alert('Koneksi terputus'); }
   }
 
-  // FUNGSI CART
   async function addToCart(id) {
-    if (!token) { openModal('authModal'); return; }
+    if (!token) { window.location.href='/login'; return; }
     try {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ product_id: id, quantity: 1 })
-      });
+      const res = await fetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ product_id: id, quantity: 1 }) });
       if (res.ok) {
         const t = document.getElementById('toast');
         t.classList.add('show');

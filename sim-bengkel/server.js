@@ -42,17 +42,9 @@ async function initDb() {
   else { db = new SQL.Database(); console.log('✅ Created new DB'); }
 
   db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'pelanggan', vehicle_type TEXT, last_oil_change DATE, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-  db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+  db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, brand TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+  db.run(`CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER DEFAULT 1, total_price INTEGER NOT NULL, status TEXT DEFAULT 'Tertunda', delivery_method TEXT, address TEXT, payment_method TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
   db.run(`CREATE TABLE IF NOT EXISTS queues (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, service_type TEXT NOT NULL, queue_number INTEGER NOT NULL, status TEXT DEFAULT 'menunggu', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-
-  try { db.run("SELECT brand FROM products LIMIT 1"); } catch { db.run("ALTER TABLE products ADD COLUMN brand TEXT"); }
-  try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } 
-  catch {
-    db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT");
-    db.run("ALTER TABLE transactions ADD COLUMN address TEXT");
-    db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT");
-  }
 
   if (!get("SELECT id FROM users WHERE role='admin'")) {
     const hash = bcrypt.hashSync('admin123', 10);
@@ -61,6 +53,7 @@ async function initDb() {
 
   if (!get("SELECT id FROM products LIMIT 1")) {
     const now = new Date().toISOString();
+    // BALIKIN FULL 15 PRODUK!
     const P = [
       ['Oli Mesin Fastron Techno 10W-40','Oli Mesin',85000,150,'Oli sintetik penuh performa tinggi.','https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80','Pertamina'],
       ['Kampas Rem Depan Bendix Metal King','Rem',125000,80,'Kampas rem kualitas OEM, daya cengkram tinggi.','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80','Bendix'],
@@ -69,7 +62,14 @@ async function initDb() {
       ['Busi NGK Iridium BPR6EIX','Busi',95000,120,'Busi iridium untuk pembakaran sempurna.','https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80','NGK'],
       ['Aki Kering GS Astra MF 35Ah','Aki',650000,30,'Aki maintenance-free, siap pakai.','https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80','GS Astra'],
       ['Sarung Jok Kulit Premium MBtech','Aksesoris',1200000,15,'Sarung pelapis jok mobil bahan kulit sintetis MBtech.','https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80','MBtech'],
+      ['Seat Cover Universal (Kain Fabric)','Aksesoris',250000,40,'Sarung pelindung jok mobil universal bahan kain.','https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=400&q=80','OtoCover'],
+      ['Karpet Dasar Mobil (Wipe-Clean)','Aksesoris',450000,25,'Karpet dasar pelindung lantai kabin mobil, anti air.','https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&q=80','OtoMat'],
+      ['Sistem Alarm Mobil + Central Lock Oem','Aksesoris',350000,30,'Sistem keamanan alarm mobil universal dengan remote.','https://images.unsplash.com/photo-1558002038-1055907df827?w=400&q=80','Oem'],
+      ['Klakson Keong Denso Waterproof','Aksesoris',185000,50,'Klakson keong suara nyaring elegan, tahan air.','https://images.unsplash.com/photo-1616781297034-03a8ce7af920?w=400&q=80','Denso'],
       ['Lampu LED Headlight H4 Philips 6000K','Lampu',450000,30,'Lampu utama LED mobil putih bersih, 3x lebih terang.','https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80','Philips'],
+      ['Lampu Foglamp LED Kuning 3000K','Lampu',280000,20,'Lampu kabut LED kuning pekat tembus hujan & kabut.','https://images.unsplash.com/photo-1598167727145-be0be4f3469e?w=400&q=80','Philips'],
+      ['Jasa Retrim Setir Kulit Asli','Aksesoris',450000,999,'Pelapisan ulang setir mobil dengan kulit asli.','https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=400&q=80','Custom'],
+      ['Jasa Retrim Panel Doortrim Pintu','Aksesoris',600000,999,'Pelapisan ulang panel doortrim pintu interior mobil.','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80','Custom'],
     ];
     for (const p of P) db.run("INSERT INTO products (name,category,price,stock,description,image_url,brand,created_at) VALUES (?,?,?,?,?,?,?,?)", [...p, now]);
   }
@@ -122,7 +122,7 @@ app.get('/api/products', (req, res) => {
   res.json(all(sql, p));
 });
 
-// --- API TRANSAKSI, CHECKOUT, QUEUE, DLL ---
+// API TRANSAKSI & QUEUE (SAMA SEPERTI SEBELUMNYA)
 app.post('/api/transactions', authMiddleware, (req, res) => {
   const { product_id, quantity=1 } = req.body;
   const prod = get("SELECT * FROM products WHERE id=?", [product_id]);
@@ -166,57 +166,53 @@ app.get('/api/queues/my', authMiddleware, (req, res) => { res.json(all("SELECT *
 app.get('/api/queues/all', adminMiddleware, (req, res) => { res.json(all(`SELECT q.*, u.name as user_name, u.email, u.vehicle_type FROM queues q JOIN users u ON q.user_id=u.id ORDER BY q.created_at DESC`, [])); });
 app.put('/api/queues/:id/status', adminMiddleware, (req, res) => { run("UPDATE queues SET status=? WHERE id=?", [req.body.status, req.params.id]); res.json({ success: true }); });
 
-// ─── 🚀 FITUR BARU: INFERENSI AI GROQ ───
+// API AI GROQ (Model Llama-3.1-8b-instant)
 app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   const { complaint } = req.body;
   if (!complaint) return res.status(400).json({ error: 'Keluhan tidak boleh kosong' });
 
-  // Ambil list produk biar AI tau kita jual apa aja
   const products = all("SELECT name FROM products", []);
   const productList = products.map(p => p.name).join(', ');
 
   const systemPrompt = `Kamu adalah Kepala Mekanik AI di "SIM-Bengkel".
-Tugasmu: Analisis keluhan kendaraan yang diberikan pelanggan.
-Berikan HANYA output berformat JSON murni (tanpa markdown backticks) dengan struktur berikut:
+Tugasmu: Analisis keluhan kendaraan pelanggan.
+Berikan HANYA output JSON murni tanpa markdown:
 {
-  "diagnosis": "Penjelasan teknis singkat mengenai kemungkinan penyebab kerusakan.",
+  "diagnosis": "Penjelasan penyebab.",
   "priority": "Tinggi / Sedang / Rendah",
-  "action": "Langkah pertama yang harus dilakukan pelanggan.",
-  "recommended_parts": ["Sebutkan 1-2 sparepart relevan"]
+  "action": "Langkah pertama.",
+  "recommended_parts": ["Sparepart relevan"]
 }
-Sparepart yang kami jual: ${productList}. Jika relevan, sarankan dari daftar tersebut. Pakai bahasa Indonesia yang profesional.`;
+Sparepart yang kami jual: ${productList}. Sarankan dari daftar ini.`;
 
   try {
     const groqKey = process.env.GROQ_API_KEY;
-    if (!groqKey) throw new Error("GROQ_API_KEY belum diset di server.");
+    if (!groqKey) throw new Error("GROQ_API_KEY belum diset.");
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqKey}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: complaint }
-        ],
+        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: complaint }],
         response_format: { type: "json_object" }
       })
     });
-
     const data = await response.json();
     if (!response.ok) throw new Error(data.error?.message || "Groq Error");
-
-    const aiResponse = JSON.parse(data.choices[0].message.content);
-    res.json(aiResponse);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: e.message || 'Gagal menghubungi AI Montir.' });
-  }
+    res.json(JSON.parse(data.choices[0].message.content));
+  } catch (e) { res.status(500).json({ error: e.message || 'Gagal.' }); }
 });
-// ────────────────────────────────────────
+
+app.get('/api/ai/recommendations', authMiddleware, (req, res) => {
+  const history = all(`SELECT p.category FROM transactions t JOIN products p ON t.product_id=p.id WHERE t.user_id=? AND t.status='Lunas' ORDER BY t.created_at DESC`, [req.user.id]);
+  const recs = []; const cats = history.map(h => h.category);
+  if (!cats.includes('Oli Mesin')) recs.push({ reason: '🔧 Belum ada riwayat ganti oli. Jaga performa mesin Anda!', priority:'high' });
+  if (cats.includes('Rem')) recs.push({ reason:'🛑 Pembeli Kampas Rem biasanya butuh Minyak Rem.', priority:'medium' });
+  if (history.length === 0) recs.push({ reason:'👋 Selamat datang! Lihat aksesoris interior untuk mempercantik mobil Anda.', priority:'low' });
+  let products = all("SELECT * FROM products ORDER BY id LIMIT 6", []);
+  res.json({ recommendations: recs.slice(0,3), products, history_count: history.length });
+});
 
 app.get('/api/admin/stats', adminMiddleware, (req, res) => {
   res.json({
@@ -232,6 +228,12 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 [['/login','login'], ['/register','register'], ['/dashboard','dashboard'], ['/admin','admin']].forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
+
+// BOM RESET DB (Biar 15 produknya masuk lagi)
+if (fs.existsSync(DB_PATH)) {
+    try { fs.unlinkSync(DB_PATH); console.log("🔥 DB LAMA DIBAKAR OLEH SERVER!"); } 
+    catch(err) { console.error("⚠️ Gagal bakar DB", err); }
+}
 
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 SIM-Bengkel Running on Port ${PORT}\n`); });
