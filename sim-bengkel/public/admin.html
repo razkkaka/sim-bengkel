@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel — SIM-Bengkel</title>
+  <title>Admin Panel — Mandiri Variasi</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Pengaman: Kalo pelanggan yg nyasar, balikin ke dashboard
     const tk = localStorage.getItem('sb_token');
     const us = JSON.parse(localStorage.getItem('sb_user') || 'null');
     if (!tk) window.location.href = '/login';
@@ -114,7 +113,7 @@
 <body>
 
 <aside class="sidebar">
-  <div class="sidebar-brand"><a href="/" class="brand-name"><span>●</span> SIM-Bengkel</a><span class="brand-badge">Admin Panel</span></div>
+  <div class="sidebar-brand"><a href="/" class="brand-name"><span>●</span> Mandiri Variasi</a><span class="brand-badge">Admin Panel</span></div>
   <nav class="sidebar-nav">
     <div class="nav-section-label">Overview</div><button class="nav-item active" onclick="showPage('dashboard', this)"><span class="nav-icon">📊</span> Dashboard</button>
     <div class="nav-section-label">Manajemen</div>
@@ -213,7 +212,6 @@
     return `<table><thead><tr><th>ID</th><th>Pelanggan</th><th>Produk</th><th>Qty</th><th>Total Pendapatan</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${orders.map(o => `<tr><td style="color:var(--text-muted)">#${o.id}</td><td><strong>${o.user_name}</strong><div style="font-size:0.75rem;color:var(--text-muted)">${o.email}</div></td><td>${o.product_name}</td><td>${o.quantity}</td><td style="color:var(--primary); font-weight:700;">Rp ${o.total_price.toLocaleString('id-ID')}</td><td><span class="badge badge-success">${o.status}</span></td><td style="color:var(--text-muted)">${new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</td></tr>`).join('')}</tbody></table>`;
   }
 
-  // 🚀 REVISI: TAMPILAN ANTREAN ADMIN LEBIH LENGKAP 🚀
   async function loadAdminQueues() {
     try {
       const res = await fetch('/api/queues/all', { headers: { Authorization: `Bearer ${token}` } });

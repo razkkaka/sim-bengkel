@@ -36,16 +36,16 @@ async function initDb() {
   try { db.run("SELECT payment_method FROM transactions LIMIT 1"); } catch { db.run("ALTER TABLE transactions ADD COLUMN delivery_method TEXT"); db.run("ALTER TABLE transactions ADD COLUMN address TEXT"); db.run("ALTER TABLE transactions ADD COLUMN payment_method TEXT"); }
   try { db.run("SELECT booking_time FROM queues LIMIT 1"); } catch { db.run("ALTER TABLE queues ADD COLUMN phone TEXT"); db.run("ALTER TABLE queues ADD COLUMN nopol TEXT"); db.run("ALTER TABLE queues ADD COLUMN rangka TEXT"); db.run("ALTER TABLE queues ADD COLUMN vehicle_details TEXT"); db.run("ALTER TABLE queues ADD COLUMN booking_date TEXT"); db.run("ALTER TABLE queues ADD COLUMN booking_time TEXT"); }
 
-  // SEEDER & UPDATE NAMA ADMIN BARU
-  if (!get("SELECT id FROM users WHERE role='admin'")) {
-    const hash = bcrypt.hashSync('admin123', 10);
-    db.run("INSERT INTO users (name,email,password,role,created_at) VALUES (?,?,?,?,?)", ['Admin Mandiri Variasi','sofiemandiri@gmail.com',hash,'admin',new Date().toISOString()]);
-  } else {
-    // Paksa update email admin lama ke yang baru
-    db.run("UPDATE users SET name='Admin Mandiri Variasi', email='sofiemandiri@gmail.com' WHERE role='admin'");
-  }
+  // PAKSA RESET ADMIN KE sofiemandiri@gmail.com (Biar lu PASTI BISA LOGIN)
+  db.run("DELETE FROM users WHERE role='admin'");
+  const hash = bcrypt.hashSync('admin123', 10);
+  db.run("INSERT INTO users (name,email,password,role,created_at) VALUES (?,?,?,?,?)", ['Admin Mandiri Variasi','sofiemandiri@gmail.com',hash,'admin',new Date().toISOString()]);
 
-  if (!get("SELECT id FROM products LIMIT 1")) {
+  // PAKSA BALIKIN 15 PRODUK JIKA KURANG DARI 15
+  const prodCount = get("SELECT COUNT(*) as c FROM products")?.c || 0;
+  if (prodCount < 15) {
+    db.run("DROP TABLE products");
+    db.run(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, price INTEGER NOT NULL, stock INTEGER DEFAULT 0, description TEXT, image_url TEXT, brand TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`);
     const now = new Date().toISOString();
     const P = [
       ['Oli Mesin Fastron Techno 10W-40','Oli Mesin',85000,150,'Oli sintetik penuh performa tinggi.','https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80','Pertamina'],
@@ -54,7 +54,15 @@ async function initDb() {
       ['Filter Udara K&N Universal Performance','Filter',320000,40,'Filter udara high-performance, bisa dicuci.','https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80','K&N'],
       ['Busi NGK Iridium BPR6EIX','Busi',95000,120,'Busi iridium untuk pembakaran sempurna.','https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80','NGK'],
       ['Aki Kering GS Astra MF 35Ah','Aki',650000,30,'Aki maintenance-free, siap pakai.','https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80','GS Astra'],
-      ['Sarung Jok Kulit Premium MBtech','Aksesoris',1200000,15,'Sarung pelapis jok mobil bahan kulit sintetis MBtech.','https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80','MBtech']
+      ['Sarung Jok Kulit Premium MBtech','Aksesoris',1200000,15,'Sarung pelapis jok mobil bahan kulit sintetis MBtech.','https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80','MBtech'],
+      ['Seat Cover Universal (Kain Fabric)','Aksesoris',250000,40,'Sarung pelindung jok mobil universal bahan kain.','https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=400&q=80','OtoCover'],
+      ['Karpet Dasar Mobil (Wipe-Clean)','Aksesoris',450000,25,'Karpet dasar pelindung lantai kabin mobil, anti air.','https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&q=80','OtoMat'],
+      ['Sistem Alarm Mobil + Central Lock Oem','Aksesoris',350000,30,'Sistem keamanan alarm mobil universal dengan remote.','https://images.unsplash.com/photo-1558002038-1055907df827?w=400&q=80','Oem'],
+      ['Klakson Keong Denso Waterproof','Aksesoris',185000,50,'Klakson keong suara nyaring elegan, tahan air.','https://images.unsplash.com/photo-1616781297034-03a8ce7af920?w=400&q=80','Denso'],
+      ['Lampu LED Headlight H4 Philips 6000K','Lampu',450000,30,'Lampu utama LED mobil putih bersih, 3x lebih terang.','https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80','Philips'],
+      ['Lampu Foglamp LED Kuning 3000K','Lampu',280000,20,'Lampu kabut LED kuning pekat tembus hujan & kabut.','https://images.unsplash.com/photo-1598167727145-be0be4f3469e?w=400&q=80','Philips'],
+      ['Jasa Retrim Setir Kulit Asli','Aksesoris',450000,999,'Pelapisan ulang setir mobil dengan kulit asli.','https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=400&q=80','Custom'],
+      ['Jasa Retrim Panel Doortrim Pintu','Aksesoris',600000,999,'Pelapisan ulang panel doortrim pintu interior mobil.','https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80','Custom'],
     ];
     for (const p of P) db.run("INSERT INTO products (name,category,price,stock,description,image_url,brand,created_at) VALUES (?,?,?,?,?,?,?,?)", [...p, now]);
   }
@@ -84,7 +92,7 @@ app.get('/api/queues/my', authMiddleware, (req, res) => { res.json(all("SELECT *
 app.get('/api/queues/all', adminMiddleware, (req, res) => { res.json(all(`SELECT q.*, u.name as user_name, u.email FROM queues q JOIN users u ON q.user_id=u.id ORDER BY q.created_at DESC`, [])); });
 app.put('/api/queues/:id/status', adminMiddleware, (req, res) => { run("UPDATE queues SET status=? WHERE id=?", [req.body.status, req.params.id]); res.json({ success: true }); });
 
-// AI GROQ
+// AI GROQ MANDIRI VARIASI
 app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   const { complaint } = req.body; if (!complaint) return res.status(400).json({ error: 'Keluhan tidak boleh kosong' });
   const products = all("SELECT name FROM products", []); const productList = products.map(p => p.name).join(', ');
@@ -102,7 +110,6 @@ app.get('/api/admin/stats', adminMiddleware, (req, res) => { res.json({ customer
 app.get('/api/admin/users', adminMiddleware, (req, res) => { res.json(all("SELECT id,name,email,role,vehicle_type,created_at FROM users ORDER BY created_at DESC", [])); });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-// TAMBAHAN ROUTE ABOUT
 [['/login','login'], ['/register','register'], ['/dashboard','dashboard'], ['/admin','admin'], ['/about','about']].forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });

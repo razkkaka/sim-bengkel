@@ -179,7 +179,6 @@
     <div id="step-delivery" class="checkout-step active">
       <div class="modal-title">Pengiriman Keranjang</div>
       <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Pilih metode pengambilan untuk <strong id="coProdName" style="color:#fff">Semua Barang</strong> Anda.</p>
-      
       <label class="checkout-option active" id="optPickup" onclick="setDelivery('pickup')"><input type="radio" name="del" checked><div><strong style="color:#fff; display:block;">Ambil di Bengkel</strong><span style="font-size:0.8rem; color:var(--text-muted)">Gratis / Tanpa Ongkir</span></div></label>
       <label class="checkout-option" id="optDelivery" onclick="setDelivery('delivery')"><input type="radio" name="del"><div><strong style="color:#fff; display:block;">Delivery / Antar ke Rumah</strong><span style="font-size:0.8rem; color:var(--text-muted)">Ongkos kirim flat Rp 15.000</span></div></label>
       <div id="addressBox"><textarea id="coAddress" rows="3" placeholder="Masukkan alamat pengiriman lengkap..."></textarea></div>
@@ -194,7 +193,7 @@
     </div>
     <div id="step-confirm" class="checkout-step">
       <div class="modal-title">Selesaikan Pembayaran</div><div id="payInstruction" style="color:var(--text-muted); font-size:0.9rem; text-align:center;"></div>
-      <div class="qris-container" id="qrisBox"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" /><div style="color:#000; font-weight:800; margin-top:10px;">Mandiri Variasi OFFICIAL</div></div>
+      <div class="qris-container" id="qrisBox"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" /><div style="color:#000; font-weight:800; margin-top:10px;">MANDIRI VARIASI OFFICIAL</div></div>
       <div id="vaBox" style="display:none; text-align:center; padding:1.5rem; background:rgba(255,255,255,0.05); border-radius:12px; margin:1rem 0;"><div style="font-size:0.85rem; color:var(--text-muted);">Virtual Account:</div><div style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; color:#fff; letter-spacing:2px; margin:10px 0;">8890 1234 5678</div><div style="font-size:0.85rem; color:var(--primary);">BCA / Mandiri / BNI</div></div>
       <button class="btn-modal btn-modal-primary" onclick="processBulkCheckout()">Saya Sudah Transfer</button><button class="btn-modal btn-modal-glass" onclick="nextStep('payment')">Pilih Metode Lain</button>
     </div>
@@ -203,7 +202,7 @@
 
 <div class="modal-overlay" id="notaModal">
   <div class="modal" style="background: #fff; color: #000; max-width: 380px;">
-    <div style="text-align:center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;"><h2 style="font-family:'Plus Jakarta Sans',sans-serif; color:#000; font-weight:800; font-size:1.6rem; margin-bottom:2px;">Mandiri Variasi</h2><div style="font-size:0.8rem; color:#555;">Bukti Tanda Terima Lunas</div></div>
+    <div style="text-align:center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;"><h2 style="font-family:'Plus Jakarta Sans',sans-serif; color:#000; font-weight:800; font-size:1.6rem; margin-bottom:2px;">MANDIRI VARIASI</h2><div style="font-size:0.8rem; color:#555;">Bukti Tanda Terima Lunas</div></div>
     <table style="width:100%; font-size:0.85rem; margin-bottom:15px; color:#000;"><tr><td style="padding:4px 0; color:#555;">No. Transaksi</td><td style="text-align:right; font-weight:700;" id="nInv"></td></tr><tr><td style="padding:4px 0; color:#555;">Tanggal Lunas</td><td style="text-align:right; font-weight:700;" id="nDate"></td></tr><tr><td style="padding:4px 0; color:#555;">Pelanggan</td><td style="text-align:right; font-weight:700;" id="nName"></td></tr></table>
     <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px;"><div style="font-weight:700; margin-bottom:8px; font-size:0.95rem; line-height: 1.3;" id="nProd"></div><div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555; margin-bottom:4px;"><span>Pengiriman:</span><span id="nDel" style="font-weight:600; text-transform:uppercase;"></span></div><div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555;"><span>Metode Bayar:</span><span id="nPay" style="font-weight:600;"></span></div></div>
     <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; margin-bottom:20px;"><span>TOTAL</span><span id="nTotal"></span></div>
@@ -293,7 +292,7 @@
   }
 
   function showNota(id, prodName, total, delivery, payment, dateStr) {
-    document.getElementById('nInv').textContent = 'INV-SB/' + id; document.getElementById('nDate').textContent = new Date(dateStr).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); document.getElementById('nName').textContent = user.name; document.getElementById('nProd').textContent = prodName; document.getElementById('nDel').textContent = delivery || 'Pickup'; document.getElementById('nPay').textContent = payment || 'Cash'; document.getElementById('nTotal').textContent = 'Rp ' + parseInt(total).toLocaleString('id-ID'); openModal('notaModal');
+    document.getElementById('nInv').textContent = 'INV-MV/' + id; document.getElementById('nDate').textContent = new Date(dateStr).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); document.getElementById('nName').textContent = user.name; document.getElementById('nProd').textContent = prodName; document.getElementById('nDel').textContent = delivery || 'Pickup'; document.getElementById('nPay').textContent = payment || 'Cash'; document.getElementById('nTotal').textContent = 'Rp ' + parseInt(total).toLocaleString('id-ID'); openModal('notaModal');
   }
 
   async function loadRecommendations() {
