@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard — SIM-Bengkel</title>
+  <title>Dashboard — Mandiri Variasi</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -116,7 +116,7 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-brand"><span>●</span> SIM-Bengkel</a>
+  <a href="/" class="nav-brand"><span>●</span> Mandiri Variasi</a>
   <div class="nav-right">
     <div class="user-pill"><div class="user-avatar" id="userAvatar">?</div><span id="userName">Memuat...</span></div>
     <a href="/#catalog" class="btn-sm btn-ghost-sm">Katalog</a>
@@ -194,7 +194,7 @@
     </div>
     <div id="step-confirm" class="checkout-step">
       <div class="modal-title">Selesaikan Pembayaran</div><div id="payInstruction" style="color:var(--text-muted); font-size:0.9rem; text-align:center;"></div>
-      <div class="qris-container" id="qrisBox"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" /><div style="color:#000; font-weight:800; margin-top:10px;">SIM-BENGKEL OFFICIAL</div></div>
+      <div class="qris-container" id="qrisBox"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" /><div style="color:#000; font-weight:800; margin-top:10px;">Mandiri Variasi OFFICIAL</div></div>
       <div id="vaBox" style="display:none; text-align:center; padding:1.5rem; background:rgba(255,255,255,0.05); border-radius:12px; margin:1rem 0;"><div style="font-size:0.85rem; color:var(--text-muted);">Virtual Account:</div><div style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; color:#fff; letter-spacing:2px; margin:10px 0;">8890 1234 5678</div><div style="font-size:0.85rem; color:var(--primary);">BCA / Mandiri / BNI</div></div>
       <button class="btn-modal btn-modal-primary" onclick="processBulkCheckout()">Saya Sudah Transfer</button><button class="btn-modal btn-modal-glass" onclick="nextStep('payment')">Pilih Metode Lain</button>
     </div>
@@ -203,7 +203,7 @@
 
 <div class="modal-overlay" id="notaModal">
   <div class="modal" style="background: #fff; color: #000; max-width: 380px;">
-    <div style="text-align:center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;"><h2 style="font-family:'Plus Jakarta Sans',sans-serif; color:#000; font-weight:800; font-size:1.6rem; margin-bottom:2px;">SIM-BENGKEL</h2><div style="font-size:0.8rem; color:#555;">Bukti Tanda Terima Lunas</div></div>
+    <div style="text-align:center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;"><h2 style="font-family:'Plus Jakarta Sans',sans-serif; color:#000; font-weight:800; font-size:1.6rem; margin-bottom:2px;">Mandiri Variasi</h2><div style="font-size:0.8rem; color:#555;">Bukti Tanda Terima Lunas</div></div>
     <table style="width:100%; font-size:0.85rem; margin-bottom:15px; color:#000;"><tr><td style="padding:4px 0; color:#555;">No. Transaksi</td><td style="text-align:right; font-weight:700;" id="nInv"></td></tr><tr><td style="padding:4px 0; color:#555;">Tanggal Lunas</td><td style="text-align:right; font-weight:700;" id="nDate"></td></tr><tr><td style="padding:4px 0; color:#555;">Pelanggan</td><td style="text-align:right; font-weight:700;" id="nName"></td></tr></table>
     <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px;"><div style="font-weight:700; margin-bottom:8px; font-size:0.95rem; line-height: 1.3;" id="nProd"></div><div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555; margin-bottom:4px;"><span>Pengiriman:</span><span id="nDel" style="font-weight:600; text-transform:uppercase;"></span></div><div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#555;"><span>Metode Bayar:</span><span id="nPay" style="font-weight:600;"></span></div></div>
     <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; margin-bottom:20px;"><span>TOTAL</span><span id="nTotal"></span></div>

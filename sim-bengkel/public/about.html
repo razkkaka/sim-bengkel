@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tentang Kami — Mandiri Variasi</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root { --bg-main: #020617; --bg-card: #0f172a; --primary: #f97316; --primary-hover: #ea580c; --text-main: #f8fafc; --text-muted: #94a3b8; --border: rgba(255, 255, 255, 0.08); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 5%; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: #fff; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .logo-icon { background: var(--primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 1.1rem; }
+    .nav-links { display: flex; gap: 2.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: 0.3s; }
+    .nav-links a:hover, .nav-links a.active { color: #fff; }
+    .nav-actions { display: flex; align-items: center; gap: 15px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-decoration: none; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+    /* HEADER TENTANG KAMI */
+    .about-header { padding: 160px 5% 80px; text-align: center; background: radial-gradient(circle at top, rgba(249, 115, 22, 0.1), transparent 60%); }
+    .badge-top { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 6px 16px; border-radius: 100px; font-size: 0.85rem; color: var(--primary); margin-bottom: 1.5rem; font-weight: 600; }
+    .about-header h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; margin-bottom: 1.5rem; color: #fff; line-height: 1.1; }
+    .about-header p { font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.8; }
+
+    /* FILOSOFI LOGO */
+    .philosophy-section { padding: 6rem 5%; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .philosophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; max-width: 1200px; margin: 0 auto; align-items: center; }
+    .logo-showcase { background: linear-gradient(145deg, #1e1b18 0%, #0a0a0a 100%); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 24px; padding: 4rem; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+    .logo-showcase::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); animation: shine 3s infinite; }
+    @keyframes shine { 100% { left: 200%; } }
+    
+    .big-logo { display: flex; align-items: center; justify-content: center; gap: 15px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.5rem; font-weight: 800; color: #fff; }
+    .big-icon { background: var(--primary); padding: 15px 20px; border-radius: 16px; font-size: 2.5rem; box-shadow: 0 10px 30px rgba(249, 115, 22, 0.4); }
+
+    .ph-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 1.5rem; color: #fff; }
+    .ph-list { list-style: none; margin-top: 2rem; }
+    .ph-list li { margin-bottom: 1.5rem; display: flex; gap: 1rem; }
+    .ph-bullet { width: 24px; height: 24px; background: rgba(249, 115, 22, 0.2); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; margin-top: 4px;}
+    .ph-text strong { color: #fff; display: block; font-size: 1.1rem; margin-bottom: 4px;}
+    .ph-text p { color: var(--text-muted); font-size: 0.95rem; }
+
+    /* FOOTER */
+    footer { background: var(--bg-main); padding: 5rem 5% 3rem; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 3rem; max-width: 1200px; margin: 0 auto; }
+    .f-brand { display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+    .f-brand-icon { background: var(--primary); padding: 5px 8px; border-radius: 6px; font-size: 1rem; color: #fff; }
+    .f-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 250px; }
+    .f-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem; }
+    .f-links { list-style: none; }
+    .f-links li { margin-bottom: 0.8rem; }
+    .f-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
+    .f-links a:hover { color: var(--primary); }
+    .f-contact p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
+    .f-contact strong { color: #fff; }
+
+    @media (max-width: 900px) {
+      .philosophy-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-icon">🔧</div>Mandiri Variasi</a>
+  <div class="nav-links">
+    <a href="/">Beranda</a>
+    <a href="/#catalog">Suku Cadang</a>
+    <a href="/about" class="active">Tentang Kami</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/dashboard" class="btn-outline">Kembali ke Dashboard</a>
+  </div>
+</nav>
+
+<header class="about-header anim-fade">
+  <div class="badge-top">Tentang Kami</div>
+  <h1>Lebih dari sekadar variasi.<br>Kami adalah mitra kendaraan Anda.</h1>
+  <p>Berawal dari bengkel lokal di Cibubur, <strong>Mandiri Variasi</strong> kini bertransformasi menjadi bengkel pintar berbasis OS yang mengintegrasikan Artificial Intelligence dengan layanan perbengkelan terbaik.</p>
+</header>
+
+<section class="philosophy-section">
+  <div class="philosophy-grid">
+    <div class="logo-showcase anim-slide">
+      <div class="big-logo">
+        <div class="big-icon">🔧</div>
+        <div>Mandiri<br><span style="color:var(--primary)">Variasi</span></div>
+      </div>
+    </div>
+    
+    <div class="anim-slide">
+      <h2 class="ph-title">Filosofi Logo</h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;">Setiap elemen dalam identitas kami dirancang dengan makna mendalam, mencerminkan komitmen kami terhadap kualitas layanan.</p>
+      
+      <ul class="ph-list">
+        <li>
+          <div class="ph-bullet">1</div>
+          <div class="ph-text">
+            <strong>Warna Oranye (Energi & Inovasi)</strong>
+            <p>Melambangkan semangat, kecepatan dalam pelayanan, serta keberanian berinovasi mengadaptasi teknologi modern (Sistem AI).</p>
+          </div>
+        </li>
+        <li>
+          <div class="ph-bullet">2</div>
+          <div class="ph-text">
+            <strong>Ikon Kunci Pas (Keahlian Teknis)</strong>
+            <p>Representasi fundamental dari keahlian teknis mekanik kami yang presisi, handal, dan berstandar profesional tinggi.</p>
+          </div>
+        </li>
+        <li>
+          <div class="ph-bullet">3</div>
+          <div class="ph-text">
+            <strong>Nama "Mandiri"</strong>
+            <p>Bermakna kemandirian, kepercayaan diri, dan dedikasi kami untuk berdiri kokoh memberikan solusi otomotif yang tuntas dari awal hingga akhir.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="f-brand"><div class="f-brand-icon">🔧</div>Mandiri Variasi</div>
+      <p class="f-desc">Pusat modifikasi dan variasi otomotif terpercaya di Cibubur dengan integrasi AI mekanik.</p>
+    </div>
+    <div><h3 class="f-title">Layanan</h3><ul class="f-links"><li><a href="#">Servis Berkala</a></li><li><a href="#">Modifikasi</a></li><li><a href="#">Pemasangan Variasi</a></li></ul></div>
+    <div><h3 class="f-title">Perusahaan</h3><ul class="f-links"><li><a href="/about">Tentang Kami</a></li><li><a href="#">Karir</a></li><li><a href="#">Blog</a></li></ul></div>
+    <div><h3 class="f-title">Kontak</h3><div class="f-contact"><p>Email: <strong>sofiemandiri@gmail.com</strong></p><p>Tel: <strong>081285997544</strong></p><p>Cibubur, Indonesia</p></div></div>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    gsap.from(".anim-fade > *", { duration: 1, y: 30, opacity: 0, stagger: 0.2, ease: "power3.out" });
+    gsap.from(".anim-slide", { duration: 1.2, x: 50, opacity: 0, stagger: 0.3, ease: "power3.out", delay: 0.5 });
+  });
+</script>
+</body>
+</html>
