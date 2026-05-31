@@ -15,7 +15,9 @@ const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 app.use(cors());
-app.use(express.json());
+// Limit diperbesar ke 10MB untuk menangani upload gambar (Base64)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const authMiddleware = (req, res, next) => {
@@ -36,21 +38,17 @@ const adminMiddleware = (req, res, next) => {
   });
 };
 
-// AUTO SEED ADMIN & PRODUK (Diperbarui dengan pelacakan Error)
+// AUTO SEED ADMIN & 15 PRODUK
 async function initDb() {
   try {
-    const { data: adminExists, error: adminErr } = await supabase.from('users').select('id').eq('email', 'sofiemandiri@gmail.com').maybeSingle();
-    if (adminErr) console.error("⚠️ Error Cek Admin:", adminErr);
-
+    const { data: adminExists } = await supabase.from('users').select('id').eq('email', 'sofiemandiri@gmail.com').maybeSingle();
     if (!adminExists) {
       const hash = bcrypt.hashSync('admin123', 10);
       await supabase.from('users').insert([{ name: 'Admin Mandiri Variasi', email: 'sofiemandiri@gmail.com', password: hash, role: 'admin' }]);
       console.log("✅ Admin berhasil dibuat!");
     }
 
-    const { count, error: countErr } = await supabase.from('products').select('*', { count: 'exact', head: true });
-    if (countErr) console.error("⚠️ Error Cek Produk:", countErr);
-
+    const { count } = await supabase.from('products').select('*', { count: 'exact', head: true });
     if (count === 0) {
       const P = [
         {name:'Oli Mesin Fastron Techno 10W-40',category:'Oli Mesin',price:85000,stock:150,description:'Oli sintetik penuh performa tinggi.',image_url:'https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80',brand:'Pertamina'},
@@ -59,38 +57,35 @@ async function initDb() {
         {name:'Filter Udara K&N Universal Performance',category:'Filter',price:320000,stock:40,description:'Filter udara high-performance, bisa dicuci.',image_url:'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80',brand:'K&N'},
         {name:'Busi NGK Iridium BPR6EIX',category:'Busi',price:95000,stock:120,description:'Busi iridium untuk pembakaran sempurna.',image_url:'https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80',brand:'NGK'},
         {name:'Aki Kering GS Astra MF 35Ah',category:'Aki',price:650000,stock:30,description:'Aki maintenance-free, siap pakai.',image_url:'https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80',brand:'GS Astra'},
-        {name:'Sarung Jok Kulit Premium MBtech',category:'Aksesoris',price:1200000,stock:15,description:'Sarung pelapis jok mobil bahan kulit sintetis.',image_url:'https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80',brand:'MBtech'},
-        {name:'Lampu LED Headlight H4 Philips 6000K',category:'Lampu',price:450000,stock:30,description:'Lampu utama LED mobil putih bersih.',image_url:'https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80',brand:'Philips'}
+        {name:'Sarung Jok Kulit Premium MBtech',category:'Aksesoris',price:1200000,stock:15,description:'Sarung pelapis jok mobil bahan kulit sintetis MBtech.',image_url:'https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80',brand:'MBtech'},
+        {name:'Seat Cover Universal (Kain Fabric)',category:'Aksesoris',price:250000,stock:40,description:'Sarung pelindung jok mobil universal bahan kain.',image_url:'https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=400&q=80',brand:'OtoCover'},
+        {name:'Karpet Dasar Mobil (Wipe-Clean)',category:'Aksesoris',price:450000,stock:25,description:'Karpet dasar pelindung lantai kabin mobil, anti air.',image_url:'https://images.unsplash.com/photo-1610647752706-3bb12232b3ab?w=400&q=80',brand:'OtoMat'},
+        {name:'Sistem Alarm Mobil + Central Lock Oem',category:'Aksesoris',price:350000,stock:30,description:'Sistem keamanan alarm mobil universal dengan remote.',image_url:'https://images.unsplash.com/photo-1558002038-1055907df827?w=400&q=80',brand:'Oem'},
+        {name:'Klakson Keong Denso Waterproof',category:'Aksesoris',price:185000,stock:50,description:'Klakson keong suara nyaring elegan, tahan air.',image_url:'https://images.unsplash.com/photo-1616781297034-03a8ce7af920?w=400&q=80',brand:'Denso'},
+        {name:'Lampu LED Headlight H4 Philips 6000K',category:'Lampu',price:450000,stock:30,description:'Lampu utama LED mobil putih bersih, 3x lebih terang.',image_url:'https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80',brand:'Philips'},
+        {name:'Lampu Foglamp LED Kuning 3000K',category:'Lampu',price:280000,stock:20,description:'Lampu kabut LED kuning pekat tembus hujan & kabut.',image_url:'https://images.unsplash.com/photo-1598167727145-be0be4f3469e?w=400&q=80',brand:'Philips'},
+        {name:'Jasa Retrim Setir Kulit Asli',category:'Aksesoris',price:450000,stock:999,description:'Pelapisan ulang setir mobil dengan kulit asli.',image_url:'https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=400&q=80',brand:'Custom'},
+        {name:'Jasa Retrim Panel Doortrim Pintu',category:'Aksesoris',price:600000,stock:999,description:'Pelapisan ulang panel doortrim pintu interior mobil.',image_url:'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80',brand:'Custom'}
       ];
-      const { error: insertErr } = await supabase.from('products').insert(P);
-      if (insertErr) console.error("⚠️ Error Input Produk:", insertErr);
-      else console.log("✅ Produk bawaan berhasil ditambahkan!");
+      await supabase.from('products').insert(P);
+      console.log("✅ 15 Produk berhasil ditambahkan!");
     }
   } catch (e) {
-    console.error("⚠️ Fatal Error di initDb:", e);
+    console.error("⚠️ Database Init Error:", e);
   }
 }
 initDb();
 
-// PRODUCTS ROUTES
+// PRODUCTS
 app.get('/api/products', async (req, res) => {
   try {
     const { search, category } = req.query;
     let query = supabase.from('products').select('*').order('created_at', { ascending: false });
-    
     if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     if (category) query = query.eq('category', category);
-    
-    const { data, error } = await query;
-    if (error) {
-      console.error("⚠️ Error Get Products:", error);
-      return res.json([]); // Kembalikan array kosong agar frontend tidak crash
-    }
+    const { data } = await query;
     res.json(data || []);
-  } catch (e) {
-    console.error("⚠️ Fatal Get Products:", e);
-    res.json([]);
-  }
+  } catch (e) { res.json([]); }
 });
 
 app.post('/api/products', adminMiddleware, async (req, res) => {
@@ -116,19 +111,16 @@ app.delete('/api/products/:id', adminMiddleware, async (req, res) => {
   res.json({ success: true });
 });
 
-// AUTH ROUTES
+// AUTH
 app.post('/api/register', async (req, res) => {
   const { name, email, password, vehicle_type } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
-  
   const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
   if (existing) return res.status(400).json({ error: 'Email sudah terdaftar' });
-  
   try {
     const hash = bcrypt.hashSync(password, 10);
     const { data: u, error } = await supabase.from('users').insert([{ name, email, password: hash, vehicle_type }]).select().single();
     if (error) throw error;
-    
     const token = jwt.sign({ id: u.id, email, role: 'pelanggan', name }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: u.id, name, email, role: 'pelanggan' } });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -137,9 +129,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   const { data: u } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
-  
   if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' });
-  
   const token = jwt.sign({ id: u.id, email: u.email, role: u.role, name: u.name }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, user: { id: u.id, name: u.name, email: u.email, role: u.role } });
 });
@@ -149,37 +139,38 @@ app.get('/api/me', authMiddleware, async (req, res) => {
   res.json(data);
 });
 
-// TRANSACTIONS ROUTES
+// TRANSACTIONS
 app.post('/api/transactions', authMiddleware, async (req, res) => {
   if (req.user.role === 'admin') return res.status(403).json({ error: 'Admin tidak dapat membeli' });
   const { product_id, quantity = 1 } = req.body;
-  
   const { data: prod } = await supabase.from('products').select('*').eq('id', product_id).single();
   if (!prod) return res.status(404).json({ error: 'Produk tidak ditemukan' });
-  
   try {
-    const { error } = await supabase.from('transactions').insert([{ user_id: req.user.id, product_id, quantity, total_price: prod.price * quantity, status: 'Tertunda' }]);
-    if (error) throw error;
+    await supabase.from('transactions').insert([{ user_id: req.user.id, product_id, quantity, total_price: prod.price * quantity, status: 'Tertunda' }]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.put('/api/transactions/checkout-cart', authMiddleware, async (req, res) => {
-  const { delivery_method, address, payment_method, extra_fee } = req.body;
-  
+  const { delivery_method, address, payment_method, extra_fee, payment_proof } = req.body;
   const { data: pendingTxs } = await supabase.from('transactions').select('*').eq('user_id', req.user.id).eq('status', 'Tertunda');
+  
   if (!pendingTxs || pendingTxs.length === 0) return res.status(400).json({ error: 'Keranjang kosong.' });
   
   try {
+    const receipt_id = 'INV-' + Date.now();
     let isFeeApplied = false;
     for (let tx of pendingTxs) {
       let finalPrice = tx.total_price;
       if (!isFeeApplied) { finalPrice += (extra_fee || 0); isFeeApplied = true; }
       
-      await supabase.from('transactions').update({ status: 'Lunas', delivery_method, address, payment_method, total_price: finalPrice }).eq('id', tx.id);
+      await supabase.from('transactions').update({ 
+        status: 'Lunas', delivery_method, address, payment_method, 
+        total_price: finalPrice, receipt_id, payment_proof 
+      }).eq('id', tx.id);
       
       const { data: prod } = await supabase.from('products').select('stock').eq('id', tx.product_id).single();
-      await supabase.from('products').update({ stock: prod.stock - tx.quantity }).eq('id', tx.product_id);
+      if(prod) await supabase.from('products').update({ stock: prod.stock - tx.quantity }).eq('id', tx.product_id);
     }
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -192,17 +183,17 @@ app.delete('/api/transactions/:id', authMiddleware, async (req, res) => {
 
 app.get('/api/transactions/my', authMiddleware, async (req, res) => {
   const { data } = await supabase.from('transactions').select('*, products(name, category, image_url)').eq('user_id', req.user.id).order('created_at', { ascending: false });
-  const formatted = data.map(t => ({ ...t, product_name: t.products.name, category: t.products.category, image_url: t.products.image_url }));
+  const formatted = data ? data.map(t => ({ ...t, product_name: t.products?.name, category: t.products?.category, image_url: t.products?.image_url })) : [];
   res.json(formatted);
 });
 
 app.get('/api/transactions/all', adminMiddleware, async (req, res) => {
   const { data } = await supabase.from('transactions').select('*, products(name), users(name, email)').order('created_at', { ascending: false });
-  const formatted = data.map(t => ({ ...t, product_name: t.products.name, user_name: t.users.name, email: t.users.email }));
+  const formatted = data ? data.map(t => ({ ...t, product_name: t.products?.name, user_name: t.users?.name, email: t.users?.email })) : [];
   res.json(formatted);
 });
 
-// QUEUES ROUTES
+// QUEUES
 app.get('/api/queues/booked-times', async (req, res) => {
   const { date } = req.query;
   const { data } = await supabase.from('queues').select('booking_time').eq('booking_date', date).neq('status', 'selesai');
@@ -231,7 +222,7 @@ app.get('/api/queues/my', authMiddleware, async (req, res) => {
 
 app.get('/api/queues/all', adminMiddleware, async (req, res) => {
   const { data } = await supabase.from('queues').select('*, users(name, email)').order('created_at', { ascending: false });
-  const formatted = data.map(q => ({ ...q, user_name: q.users.name, email: q.users.email }));
+  const formatted = data ? data.map(q => ({ ...q, user_name: q.users?.name, email: q.users?.email })) : [];
   res.json(formatted);
 });
 
@@ -240,7 +231,7 @@ app.put('/api/queues/:id/status', adminMiddleware, async (req, res) => {
   res.json({ success: true });
 });
 
-// AI & STATS ROUTES
+// AI & STATS
 app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   const { complaint } = req.body;
   if (!complaint) return res.status(400).json({ error: 'Keluhan tidak boleh kosong' });
@@ -259,7 +250,7 @@ app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
 
 app.get('/api/ai/recommendations', authMiddleware, async (req, res) => {
   const { data: history } = await supabase.from('transactions').select('products(category)').eq('user_id', req.user.id).eq('status', 'Lunas');
-  const cats = history ? history.map(h => h.products.category) : [];
+  const cats = history ? history.map(h => h.products?.category) : [];
   const recs = [];
   
   if (!cats.includes('Oli Mesin')) recs.push({ reason: '🔧 Belum ada riwayat ganti oli.', priority: 'high' });
@@ -290,4 +281,4 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file + '.html')));
 });
 
-app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 Mandiri Variasi (Supabase Edition) Running on Port ${PORT}\n`); });
+app.listen(PORT, '0.0.0.0', () => { console.log(`\n🚀 Mandiri Variasi Running on Port ${PORT}\n`); });

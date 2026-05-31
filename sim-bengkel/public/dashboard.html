@@ -189,13 +189,19 @@
       <label class="checkout-option active" id="optQRIS" onclick="setPayment('QRIS')"><input type="radio" name="pay" checked><div><strong style="color:#fff;">QRIS (All E-Wallet)</strong></div></label>
       <label class="checkout-option" id="optGoPay" onclick="setPayment('GoPay')"><input type="radio" name="pay"><div><strong style="color:#fff;">GoPay / DANA</strong></div></label>
       <label class="checkout-option" id="optBank" onclick="setPayment('Transfer Bank')"><input type="radio" name="pay"><div><strong style="color:#fff;">Transfer Bank</strong></div></label>
-      <button class="btn-modal btn-modal-primary" onclick="nextStep('confirm')">Bayar Sekarang</button><button class="btn-modal btn-modal-glass" onclick="nextStep('delivery')">Kembali</button>
+      <button class="btn-modal btn-modal-primary" onclick="nextStep('confirm')">Lanjut & Upload Bukti</button><button class="btn-modal btn-modal-glass" onclick="nextStep('delivery')">Kembali</button>
     </div>
     <div id="step-confirm" class="checkout-step">
       <div class="modal-title">Selesaikan Pembayaran</div><div id="payInstruction" style="color:var(--text-muted); font-size:0.9rem; text-align:center;"></div>
       <div class="qris-container" id="qrisBox"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" /><div style="color:#000; font-weight:800; margin-top:10px;">MANDIRI VARIASI OFFICIAL</div></div>
       <div id="vaBox" style="display:none; text-align:center; padding:1.5rem; background:rgba(255,255,255,0.05); border-radius:12px; margin:1rem 0;"><div style="font-size:0.85rem; color:var(--text-muted);">Virtual Account:</div><div style="font-size:1.5rem; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; color:#fff; letter-spacing:2px; margin:10px 0;">8890 1234 5678</div><div style="font-size:0.85rem; color:var(--primary);">BCA / Mandiri / BNI</div></div>
-      <button class="btn-modal btn-modal-primary" onclick="processBulkCheckout()">Saya Sudah Transfer</button><button class="btn-modal btn-modal-glass" onclick="nextStep('payment')">Pilih Metode Lain</button>
+      
+      <div style="margin: 1.5rem 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px dashed var(--primary);">
+        <label style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Upload Bukti Transfer (Opsional/Jika Ada)</label>
+        <input type="file" id="uploadProof" accept="image/*" style="width:100%; color:#fff; font-size:0.85rem;">
+      </div>
+
+      <button class="btn-modal btn-modal-primary" onclick="processBulkCheckout()">Saya Sudah Transfer</button><button class="btn-modal btn-modal-glass" onclick="nextStep('payment')">Kembali</button>
     </div>
   </div>
 </div>
@@ -275,7 +281,7 @@
       else {
         const cartTotal = pending.reduce((sum, item) => sum + item.total_price, 0);
         let cartHtml = `<table><thead><tr><th>Produk</th><th>Harga</th><th>Aksi</th></tr></thead><tbody>
-            ${pending.map(o => `<tr><td><div style="display:flex; align-items:center; gap:10px;">${o.image_url.startsWith('http') ? `<img src="${o.image_url}" onerror="this.outerHTML='<span style=\\'font-size:2rem\\'>🔧</span>'" style="width:45px;height:45px;border-radius:6px;object-fit:cover; border:1px solid var(--border-color);">` : `<span style="font-size:2rem">${o.image_url}</span>`}<strong>${o.product_name}</strong></div></td><td><strong style="color:#fff">Rp ${o.total_price.toLocaleString('id-ID')}</strong></td><td><button class="btn-del" onclick="deleteCartItem(${o.id})">❌ Hapus</button></td></tr>`).join('')}
+            ${pending.map(o => `<tr><td><div style="display:flex; align-items:center; gap:10px;">${o.image_url && (o.image_url.startsWith('http') || o.image_url.startsWith('data:image')) ? `<img src="${o.image_url}" onerror="this.outerHTML='<span style=\\'font-size:2rem\\'>🔧</span>'" style="width:45px;height:45px;border-radius:6px;object-fit:cover; border:1px solid var(--border-color);">` : `<span style="font-size:2rem">${o.image_url || '🔧'}</span>`}<strong>${o.product_name}</strong></div></td><td><strong style="color:#fff">Rp ${o.total_price.toLocaleString('id-ID')}</strong></td><td><button class="btn-del" onclick="deleteCartItem(${o.id})">❌ Hapus</button></td></tr>`).join('')}
           </tbody></table>
           <div style="display:flex; justify-content:space-between; align-items:center; padding:1.5rem; background:rgba(255,255,255,0.02); border-top:1px solid var(--border-color);"><div><div style="font-size:0.9rem; color:var(--text-muted)">Total Belanja (${pending.length} Barang):</div><div style="font-size:1.4rem; font-weight:800; color:var(--primary)">Rp ${cartTotal.toLocaleString('id-ID')}</div></div><button class="btn-pay" onclick="openBulkCheckout(${cartTotal}, ${pending.length})">Checkout Semua ➔</button></div>`;
         cartCont.innerHTML = cartHtml;
@@ -284,39 +290,72 @@
       const ordCont = document.getElementById('ordersContainer');
       if (!completed.length) { ordCont.innerHTML = '<div class="empty-state">Belum Ada Transaksi Selesai.</div>'; } 
       else {
-        ordCont.innerHTML = `<table><thead><tr><th>Produk</th><th>Pengiriman</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-            ${completed.map(o => `<tr><td><strong>${o.product_name}</strong></td><td style="text-transform:capitalize; color:var(--text-muted)">${o.delivery_method || '-'}</td><td style="color:var(--primary); font-weight:700">Rp ${o.total_price.toLocaleString('id-ID')}</td><td><span class="status-badge status-confirmed">LUNAS</span></td><td><button class="btn-edit" onclick="showNota('${o.id}', '${o.product_name.replace(/'/g, "&apos;")}', ${o.total_price}, '${o.delivery_method}', '${o.payment_method}', '${o.created_at}')">📄 Nota</button></td></tr>`).join('')}
+        // GROUP NOTA BERDASARKAN RECEIPT ID (INVOICE GABUNGAN)
+        const grouped = {};
+        completed.forEach(o => {
+          const rid = o.receipt_id || `TRX-${o.id}`;
+          if(!grouped[rid]) grouped[rid] = { id: rid, date: o.created_at, items: [], total: 0, delivery: o.delivery_method, payment: o.payment_method };
+          grouped[rid].items.push(`• ${o.product_name} (${o.quantity}x)`);
+          grouped[rid].total += o.total_price;
+        });
+
+        ordCont.innerHTML = `<table><thead><tr><th>No. Invoice</th><th>Item Pesanan</th><th>Pengiriman</th><th>Total Bayar</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+            ${Object.values(grouped).map(g => `<tr><td><strong style="color:var(--text-muted)">${g.id}</strong></td><td style="font-size:0.85rem">${g.items.join('<br>')}</td><td style="text-transform:capitalize; color:var(--text-muted)">${g.delivery || '-'}</td><td style="color:var(--primary); font-weight:700">Rp ${g.total.toLocaleString('id-ID')}</td><td><span class="status-badge status-confirmed">LUNAS</span></td><td><button class="btn-edit" onclick="showNota('${g.id}', '${g.items.join('<br>').replace(/'/g, "&apos;")}', ${g.total}, '${g.delivery}', '${g.payment}', '${g.date}')">📄 Nota</button></td></tr>`).join('')}
           </tbody></table>`;
       }
     } catch {}
   }
 
-  function showNota(id, prodName, total, delivery, payment, dateStr) {
-    document.getElementById('nInv').textContent = 'INV-MV/' + id; document.getElementById('nDate').textContent = new Date(dateStr).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); document.getElementById('nName').textContent = user.name; document.getElementById('nProd').textContent = prodName; document.getElementById('nDel').textContent = delivery || 'Pickup'; document.getElementById('nPay').textContent = payment || 'Cash'; document.getElementById('nTotal').textContent = 'Rp ' + parseInt(total).toLocaleString('id-ID'); openModal('notaModal');
+  function showNota(id, itemsStr, total, delivery, payment, dateStr) {
+    document.getElementById('nInv').textContent = id; 
+    document.getElementById('nDate').textContent = new Date(dateStr).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); 
+    document.getElementById('nName').textContent = user.name; 
+    document.getElementById('nProd').innerHTML = itemsStr; 
+    document.getElementById('nDel').textContent = delivery || 'Pickup'; 
+    document.getElementById('nPay').textContent = payment || 'Cash'; 
+    document.getElementById('nTotal').textContent = 'Rp ' + parseInt(total).toLocaleString('id-ID'); 
+    openModal('notaModal');
   }
 
   async function loadRecommendations() {
     try {
       const res = await fetch('/api/ai/recommendations', { headers: { Authorization: `Bearer ${token}` } }); const data = await res.json(); const grid = document.getElementById('aiProductsGrid');
-      if (data.products?.length) { grid.innerHTML = data.products.map(p => `<div class="ai-product-card" onclick="addToCart(${p.id})"><div class="ai-prod-img">${p.image_url.startsWith('http') ? `<img src="${p.image_url}" onerror="this.outerHTML='<span style=\\'font-size:3rem\\'>🔧</span>'">` : `<span style="font-size:3rem">${p.image_url}</span>`}</div><div class="ai-prod-name">${p.name}</div><div class="ai-prod-price">Rp ${p.price.toLocaleString('id-ID')}</div><button class="btn-ai-buy">➕ Masukkan Keranjang</button></div>`).join(''); } 
+      if (data.products?.length) { grid.innerHTML = data.products.map(p => `<div class="ai-product-card" onclick="addToCart(${p.id})"><div class="ai-prod-img">${p.image_url && (p.image_url.startsWith('http') || p.image_url.startsWith('data:image')) ? `<img src="${p.image_url}" onerror="this.outerHTML='<span style=\\'font-size:3rem\\'>🔧</span>'">` : `<span style="font-size:3rem">${p.image_url || '🔧'}</span>`}</div><div class="ai-prod-name">${p.name}</div><div class="ai-prod-price">Rp ${p.price.toLocaleString('id-ID')}</div><button class="btn-ai-buy">➕ Masukkan Keranjang</button></div>`).join(''); } 
       else { document.querySelector('.ai-section').style.display = 'none'; }
     } catch {}
   }
 
-  async function addToCart(id) { try { const res = await fetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ product_id: id, quantity: 1 }) }); if (res.ok) { showToast('🛒', 'Masuk Keranjang', 'Berhasil ditambahkan ke keranjang.'); loadOrders(); } } catch {} }
+  async function addToCart(id) { 
+    if (!token) { window.location.href='/login'; return; }
+    try { 
+      const res = await fetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ product_id: id, quantity: 1 }) }); 
+      if (res.ok) { showToast('🛒', 'Masuk Keranjang', 'Berhasil ditambahkan ke keranjang.'); loadOrders(); } 
+    } catch {} 
+  }
+  
   async function deleteCartItem(id) { if(!confirm('Keluarkan barang ini dari keranjang?')) return; try { await fetch(`/api/transactions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }}); loadOrders(); } catch {} }
 
   function openModal(id) { document.getElementById(id).classList.add('active'); }
   function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-  function openBulkCheckout(totalPrice, itemCount) { cartData = { itemsCount: itemCount, subTotal: totalPrice, delivery:'pickup', payment:'QRIS', address:'' }; document.getElementById('coProdName').textContent = `${itemCount} Barang di Keranjang`; setDelivery('pickup'); setPayment('QRIS'); nextStep('delivery'); openModal('checkoutModal'); }
+  function openBulkCheckout(totalPrice, itemCount) { 
+    cartData = { itemsCount: itemCount, subTotal: totalPrice, delivery:'pickup', payment:'QRIS', address:'' }; 
+    document.getElementById('coProdName').textContent = `${itemCount} Barang di Keranjang`; 
+    document.getElementById('uploadProof').value = ''; // Reset input file
+    setDelivery('pickup'); setPayment('QRIS'); nextStep('delivery'); openModal('checkoutModal'); 
+  }
   
   function nextStep(stepId) {
     if (stepId === 'payment') {
       if (cartData.delivery === 'delivery') { const addr = document.getElementById('coAddress').value.trim(); if (!addr) { showToast('⚠️', 'Alamat Kosong', 'Harap isi alamat lengkap pengiriman.'); return; } cartData.address = addr; } else { cartData.address = ''; }
       document.getElementById('coTotal').textContent = `Rp ${(cartData.delivery === 'delivery' ? cartData.subTotal + 15000 : cartData.subTotal).toLocaleString('id-ID')}`;
     }
-    if (stepId === 'confirm') { const isQR = cartData.payment === 'QRIS' || cartData.payment === 'GoPay'; document.getElementById('qrisBox').style.display = isQR ? 'block' : 'none'; document.getElementById('vaBox').style.display = isQR ? 'none' : 'block'; document.getElementById('payInstruction').textContent = isQR ? 'Scan kode QR ini dengan aplikasi pembayaran Anda.' : 'Transfer ke Virtual Account di bawah ini.'; }
+    if (stepId === 'confirm') { 
+      const isQR = cartData.payment === 'QRIS' || cartData.payment === 'GoPay'; 
+      document.getElementById('qrisBox').style.display = isQR ? 'block' : 'none'; 
+      document.getElementById('vaBox').style.display = isQR ? 'none' : 'block'; 
+      document.getElementById('payInstruction').textContent = isQR ? 'Scan kode QR ini, lalu upload bukti transfer.' : 'Transfer ke Virtual Account, lalu upload bukti transfer.'; 
+    }
     document.querySelectorAll('.checkout-step').forEach(el => el.classList.remove('active')); document.getElementById('step-' + stepId).classList.add('active');
   }
   
@@ -324,8 +363,28 @@
   function setPayment(method) { cartData.payment = method; ['QRIS','GoPay','Bank'].forEach(id => document.getElementById('opt'+id).classList.remove('active')); document.getElementById('opt'+(method==='Transfer Bank'?'Bank':method)).classList.add('active'); }
 
   async function processBulkCheckout() {
-    closeModal('checkoutModal');
-    try { const res = await fetch(`/api/transactions/checkout-cart`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ delivery_method: cartData.delivery, address: cartData.address, payment_method: cartData.payment, extra_fee: cartData.delivery === 'delivery' ? 15000 : 0 }) }); if (res.ok) { showToast('✅', 'Pembayaran Berhasil!', `Seluruh pesanan Anda telah Lunas.`); loadOrders(); loadRecommendations(); } } catch {}
+    const btn = document.querySelector('#step-confirm button.btn-modal-primary');
+    btn.disabled = true; btn.textContent = 'Memproses...';
+    
+    // Konversi File Bukti Transfer ke Base64
+    let proofStr = null;
+    const fileInput = document.getElementById('uploadProof');
+    if (fileInput && fileInput.files.length > 0) {
+      proofStr = await new Promise(r => {
+        const reader = new FileReader();
+        reader.onload = e => r(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      });
+    }
+
+    try { 
+      const res = await fetch(`/api/transactions/checkout-cart`, { 
+        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
+        body: JSON.stringify({ delivery_method: cartData.delivery, address: cartData.address, payment_method: cartData.payment, extra_fee: cartData.delivery === 'delivery' ? 15000 : 0, payment_proof: proofStr }) 
+      }); 
+      if (res.ok) { showToast('✅', 'Pembayaran Berhasil!', `Seluruh pesanan Anda telah Lunas.`); loadOrders(); loadRecommendations(); closeModal('checkoutModal'); } 
+    } catch {}
+    finally { btn.disabled = false; btn.textContent = 'Saya Sudah Transfer'; }
   }
 
   function showToast(icon, title, msg) { const t = document.getElementById('toast'); document.getElementById('toastIcon').textContent = icon; document.getElementById('toastTitle').textContent = title; document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }

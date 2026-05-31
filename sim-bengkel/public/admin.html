@@ -148,7 +148,7 @@
     </div>
 
     <div class="page-section" id="page-orders">
-      <div class="section-card"><div class="section-header"><div><div class="section-title">Semua Transaksi</div><div class="section-sub">Riwayat lengkap pembelian dari pelanggan</div></div></div><div id="ordersTable" class="table-responsive"><div class="empty-state">Memuat...</div></div></div>
+      <div class="section-card"><div class="section-header"><div><div class="section-title">Semua Transaksi</div><div class="section-sub">Riwayat lengkap pembelian dari pelanggan (Gabungan per Invoice)</div></div></div><div id="ordersTable" class="table-responsive"><div class="empty-state">Memuat...</div></div></div>
     </div>
 
     <div class="page-section" id="page-users">
@@ -157,10 +157,27 @@
   </div>
 </div>
 
+<!-- Modal Bukti Transfer -->
+<div class="modal-overlay" id="proofModal">
+  <div class="modal" style="text-align:center;">
+    <h3 style="color:#fff; margin-bottom:1rem; font-family:'Plus Jakarta Sans', sans-serif;">Bukti Transfer Pelanggan</h3>
+    <img id="proofImage" style="max-width:100%; border-radius:8px; margin-bottom:1.5rem; border: 1px solid var(--border-color);" src="" alt="Bukti Kosong/Error" />
+    <button class="btn btn-edit" style="width:100%" onclick="closeModal('proofModal')">Tutup</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="productModal">
   <div class="modal">
     <div class="modal-title" id="modalTitle">➕ Tambah Produk</div><input type="hidden" id="editId" />
-    <div class="form-group"><label class="form-label">URL Gambar (Opsional)</label><input class="form-input" id="pImage" placeholder="https://images.unsplash.com/..." /></div>
+    
+    <div class="form-group">
+      <label class="form-label">Gambar Produk (Upload File / Paste URL)</label>
+      <div style="display: flex; gap: 10px;">
+        <input type="file" id="pImgUpload" accept="image/*" class="form-input" style="flex:1" onchange="convertBase64(this)">
+        <input type="text" class="form-input" id="pImage" placeholder="Atau paste URL..." style="flex:1" />
+      </div>
+    </div>
+    
     <div class="form-group"><label class="form-label">Nama Produk</label><input class="form-input" id="pName" placeholder="Contoh: Oli Mesin Fastron" /></div>
     <div class="form-row2"><div class="form-group"><label class="form-label">Kategori</label><select class="form-input" id="pCategory"><option>Oli Mesin</option><option>Rem</option><option>Filter</option><option>Busi</option><option>Aki</option><option>Belt</option><option>Suspensi</option><option>Lampu</option><option>Aksesoris</option></select></div><div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="pBrand" placeholder="Contoh: Pertamina" /></div></div>
     <div class="form-row2"><div class="form-group"><label class="form-label">Harga (Rp)</label><input class="form-input" type="number" id="pPrice" placeholder="85000" /></div><div class="form-group"><label class="form-label">Stok Fisik</label><input class="form-input" type="number" id="pStock" placeholder="100" /></div></div>
@@ -201,15 +218,51 @@
   }
 
   async function loadDashboardOrders() {
-    try { const res = await fetch('/api/transactions/all', { headers: { Authorization: `Bearer ${token}` } }); const orders = await res.json(); const el = document.getElementById('dashboardOrders'); if (!orders.length) { el.innerHTML = '<div class="empty-state">Belum ada transaksi masuk.</div>'; return; } el.innerHTML = renderOrdersTable(orders); } catch {}
+    try { 
+      const res = await fetch('/api/transactions/all', { headers: { Authorization: `Bearer ${token}` } }); 
+      const orders = await res.json(); 
+      const el = document.getElementById('dashboardOrders'); 
+      if (!orders.length) { el.innerHTML = '<div class="empty-state">Belum ada transaksi masuk.</div>'; return; } 
+      // Render simple table for dashboard
+      el.innerHTML = `<table><thead><tr><th>ID</th><th>Pelanggan</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead><tbody>${orders.slice(0,10).map(o => `<tr><td style="color:var(--text-muted)">#${o.id}</td><td><strong>${o.user_name}</strong></td><td>${o.product_name}</td><td>${o.quantity}</td><td style="color:var(--primary); font-weight:700;">Rp ${o.total_price.toLocaleString('id-ID')}</td><td><span class="badge badge-success">${o.status}</span></td></tr>`).join('')}</tbody></table>`;
+    } catch {}
   }
+
+  function showProof(base64Data) {
+    if (!base64Data || base64Data === 'null' || base64Data === 'undefined') {
+      return showToast('⚠️', 'Tidak Ada Bukti', 'Pelanggan tidak mengupload bukti transfer.');
+    }
+    document.getElementById('proofImage').src = base64Data;
+    document.getElementById('proofModal').classList.add('active');
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
   async function loadOrders() {
-    try { const res = await fetch('/api/transactions/all', { headers: { Authorization: `Bearer ${token}` } }); const orders = await res.json(); const el = document.getElementById('ordersTable'); if (!orders.length) { el.innerHTML = '<div class="empty-state">Belum ada transaksi.</div>'; return; } el.innerHTML = renderOrdersTable(orders); } catch {}
-  }
+    try { 
+      const res = await fetch('/api/transactions/all', { headers: { Authorization: `Bearer ${token}` } }); 
+      const orders = await res.json(); 
+      const el = document.getElementById('ordersTable'); 
+      if (!orders.length) { el.innerHTML = '<div class="empty-state">Belum ada transaksi.</div>'; return; } 
+      
+      // GROUP BY INVOICE / RECEIPT_ID UNTUK ADMIN
+      const grouped = {};
+      orders.forEach(o => {
+        const rId = o.receipt_id || `TRX-${o.id}`;
+        if(!grouped[rId]) grouped[rId] = { id: rId, user_name: o.user_name, email: o.email, items: [], total: 0, status: o.status, date: o.created_at, proof: o.payment_proof };
+        grouped[rId].items.push(`• ${o.quantity}x ${o.product_name}`);
+        grouped[rId].total += o.total_price;
+      });
 
-  function renderOrdersTable(orders) {
-    return `<table><thead><tr><th>ID</th><th>Pelanggan</th><th>Produk</th><th>Qty</th><th>Total Pendapatan</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>${orders.map(o => `<tr><td style="color:var(--text-muted)">#${o.id}</td><td><strong>${o.user_name}</strong><div style="font-size:0.75rem;color:var(--text-muted)">${o.email}</div></td><td>${o.product_name}</td><td>${o.quantity}</td><td style="color:var(--primary); font-weight:700;">Rp ${o.total_price.toLocaleString('id-ID')}</td><td><span class="badge badge-success">${o.status}</span></td><td style="color:var(--text-muted)">${new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</td></tr>`).join('')}</tbody></table>`;
+      el.innerHTML = `<table><thead><tr><th>Invoice</th><th>Pelanggan</th><th>Detail Pesanan</th><th>Total Bayar</th><th>Bukti Trf</th></tr></thead><tbody>
+        ${Object.values(grouped).map(g => `<tr>
+          <td style="color:var(--text-muted); font-size:0.85rem">${g.id}<br><span style="font-size:0.75rem">${new Date(g.date).toLocaleDateString('id-ID')}</span></td>
+          <td><strong>${g.user_name}</strong><div style="font-size:0.75rem;color:var(--text-muted)">${g.email}</div></td>
+          <td style="font-size:0.85rem">${g.items.join('<br>')}</td>
+          <td style="color:var(--primary); font-weight:700;">Rp ${g.total.toLocaleString('id-ID')}</td>
+          <td><button class="btn btn-edit btn-sm" onclick="showProof('${g.proof || ''}')">📸 Lihat</button></td>
+        </tr>`).join('')}</tbody></table>`;
+    } catch {}
   }
 
   async function loadAdminQueues() {
@@ -246,7 +299,7 @@
 
   function renderProductsTable(products) {
     const el = document.getElementById('productsTable'); if (!products.length) { el.innerHTML = '<div class="empty-state">Tidak ada produk ditemukan.</div>'; return; }
-    el.innerHTML = `<table><thead><tr><th>Produk</th><th>Kategori</th><th>Brand</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody>${products.map(p => `<tr><td><div style="display:flex; align-items:center; gap:12px;">${p.image_url && p.image_url.startsWith('http') ? `<img src="${p.image_url}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color)">` : `<span style="font-size:1.5rem">${p.image_url || '🔧'}</span>`}<strong>${p.name}</strong></div></td><td><span class="badge badge-slate">${p.category}</span></td><td>${p.brand || '—'}</td><td style="color:#fff; font-weight:600">Rp ${p.price.toLocaleString('id-ID')}</td><td><span class="badge ${p.stock < 10 ? 'badge-danger' : p.stock < 30 ? 'badge-warning' : 'badge-success'}">${p.stock} unit</span></td><td><div style="display:flex;gap:8px"><button class="btn btn-edit btn-sm" onclick='openEditModal(${JSON.stringify(p).replace(/'/g, "&#39;")})'>Edit</button><button class="btn btn-danger btn-sm" onclick="openDeleteModal(${p.id},'${p.name.replace(/'/g,"\\'")}')">Hapus</button></div></td></tr>`).join('')}</tbody></table>`;
+    el.innerHTML = `<table><thead><tr><th>Produk</th><th>Kategori</th><th>Brand</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody>${products.map(p => `<tr><td><div style="display:flex; align-items:center; gap:12px;">${p.image_url && (p.image_url.startsWith('http') || p.image_url.startsWith('data:image')) ? `<img src="${p.image_url}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid var(--border-color)">` : `<span style="font-size:1.5rem">${p.image_url || '🔧'}</span>`}<strong>${p.name}</strong></div></td><td><span class="badge badge-slate">${p.category}</span></td><td>${p.brand || '—'}</td><td style="color:#fff; font-weight:600">Rp ${p.price.toLocaleString('id-ID')}</td><td><span class="badge ${p.stock < 10 ? 'badge-danger' : p.stock < 30 ? 'badge-warning' : 'badge-success'}">${p.stock} unit</span></td><td><div style="display:flex;gap:8px"><button class="btn btn-edit btn-sm" onclick='openEditModal(${JSON.stringify(p).replace(/'/g, "&#39;")})'>Edit</button><button class="btn btn-danger btn-sm" onclick="openDeleteModal(${p.id},'${p.name.replace(/'/g,"\\'")}')">Hapus</button></div></td></tr>`).join('')}</tbody></table>`;
   }
   function filterTable() { const q = document.getElementById('productSearch').value.toLowerCase(); renderProductsTable(allProducts.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || (p.brand||'').toLowerCase().includes(q))); }
 
@@ -254,8 +307,17 @@
     try { const res = await fetch('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }); const users = await res.json(); const el = document.getElementById('usersTable'); if (!users.length) { el.innerHTML = '<div class="empty-state">Tidak ada pengguna.</div>'; return; } el.innerHTML = `<table><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>Role</th><th>Kendaraan</th><th>Tgl Bergabung</th></tr></thead><tbody>${users.map(u => `<tr><td style="color:var(--text-muted)">#${u.id}</td><td><strong>${u.name}</strong></td><td style="color:var(--text-muted)">${u.email}</td><td><span class="badge ${u.role==='admin' ? 'badge-danger' : 'badge-slate'}">${u.role}</span></td><td>${u.vehicle_type || '—'}</td><td style="color:var(--text-muted)">${new Date(u.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</td></tr>`).join('')}</tbody></table>`; } catch {}
   }
 
-  function openAddModal() { document.getElementById('modalTitle').textContent = 'Tambah Produk Baru'; document.getElementById('editId').value = ''; ['pImage','pName','pBrand','pPrice','pStock','pDesc'].forEach(id => document.getElementById(id).value = ''); document.getElementById('productModal').classList.add('active'); }
-  function openEditModal(p) { document.getElementById('modalTitle').textContent = 'Edit Produk'; document.getElementById('editId').value = p.id; document.getElementById('pImage').value = p.image_url || ''; document.getElementById('pName').value = p.name; document.getElementById('pCategory').value = p.category; document.getElementById('pBrand').value = p.brand || ''; document.getElementById('pPrice').value = p.price; document.getElementById('pStock').value = p.stock; document.getElementById('pDesc').value = p.description || ''; document.getElementById('productModal').classList.add('active'); }
+  // FUNGSI KONVERSI GAMBAR KE BASE64
+  function convertBase64(input) {
+    if(input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { document.getElementById('pImage').value = e.target.result; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function openAddModal() { document.getElementById('modalTitle').textContent = 'Tambah Produk Baru'; document.getElementById('editId').value = ''; ['pImage','pImgUpload','pName','pBrand','pPrice','pStock','pDesc'].forEach(id => document.getElementById(id).value = ''); document.getElementById('productModal').classList.add('active'); }
+  function openEditModal(p) { document.getElementById('modalTitle').textContent = 'Edit Produk'; document.getElementById('editId').value = p.id; document.getElementById('pImage').value = p.image_url || ''; document.getElementById('pImgUpload').value = ''; document.getElementById('pName').value = p.name; document.getElementById('pCategory').value = p.category; document.getElementById('pBrand').value = p.brand || ''; document.getElementById('pPrice').value = p.price; document.getElementById('pStock').value = p.stock; document.getElementById('pDesc').value = p.description || ''; document.getElementById('productModal').classList.add('active'); }
   function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
 
   async function saveProduct() {
