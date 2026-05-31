@@ -10,7 +10,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'mandirivariasi-ultra-secret-key-2024';
 
-// Inisialisasi Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -19,7 +18,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware Auth
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token' });
@@ -38,70 +36,61 @@ const adminMiddleware = (req, res, next) => {
   });
 };
 
-// AUTO SEED ADMIN & PRODUK
+// AUTO SEED ADMIN & PRODUK (Diperbarui dengan pelacakan Error)
 async function initDb() {
-  const { data: adminExists } = await supabase.from('users').select('id').eq('email', 'sofiemandiri@gmail.com').single();
-  if (!adminExists) {
-    const hash = bcrypt.hashSync('admin123', 10);
-    await supabase.from('users').insert([{ name: 'Admin Mandiri Variasi', email: 'sofiemandiri@gmail.com', password: hash, role: 'admin' }]);
-  }
+  try {
+    const { data: adminExists, error: adminErr } = await supabase.from('users').select('id').eq('email', 'sofiemandiri@gmail.com').maybeSingle();
+    if (adminErr) console.error("⚠️ Error Cek Admin:", adminErr);
 
-  const { count } = await supabase.from('products').select('*', { count: 'exact', head: true });
-  if (count === 0) {
-    const P = [
-      {name:'Oli Mesin Fastron Techno 10W-40',category:'Oli Mesin',price:85000,stock:150,description:'Oli sintetik penuh performa tinggi.',image_url:'https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80',brand:'Pertamina'},
-      {name:'Kampas Rem Depan Bendix Metal King',category:'Rem',price:125000,stock:80,description:'Kampas rem kualitas OEM.',image_url:'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80',brand:'Bendix'},
-      {name:'Minyak Rem DOT 4 Philips (250ml)',category:'Rem',price:45000,stock:200,description:'Minyak rem titik didih tinggi.',image_url:'https://images.unsplash.com/photo-1600863920956-6512140889df?w=400&q=80',brand:'Philips'}
-      // (Tambahkan produk lain jika perlu, disingkat untuk kejelasan)
-    ];
-    await supabase.from('products').insert(P);
+    if (!adminExists) {
+      const hash = bcrypt.hashSync('admin123', 10);
+      await supabase.from('users').insert([{ name: 'Admin Mandiri Variasi', email: 'sofiemandiri@gmail.com', password: hash, role: 'admin' }]);
+      console.log("✅ Admin berhasil dibuat!");
+    }
+
+    const { count, error: countErr } = await supabase.from('products').select('*', { count: 'exact', head: true });
+    if (countErr) console.error("⚠️ Error Cek Produk:", countErr);
+
+    if (count === 0) {
+      const P = [
+        {name:'Oli Mesin Fastron Techno 10W-40',category:'Oli Mesin',price:85000,stock:150,description:'Oli sintetik penuh performa tinggi.',image_url:'https://images.unsplash.com/photo-1621570275819-aa849e8ce79d?w=400&q=80',brand:'Pertamina'},
+        {name:'Kampas Rem Depan Bendix Metal King',category:'Rem',price:125000,stock:80,description:'Kampas rem kualitas OEM, daya cengkram tinggi.',image_url:'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&q=80',brand:'Bendix'},
+        {name:'Minyak Rem DOT 4 Philips (250ml)',category:'Rem',price:45000,stock:200,description:'Minyak rem titik didih tinggi, performa stabil.',image_url:'https://images.unsplash.com/photo-1600863920956-6512140889df?w=400&q=80',brand:'Philips'},
+        {name:'Filter Udara K&N Universal Performance',category:'Filter',price:320000,stock:40,description:'Filter udara high-performance, bisa dicuci.',image_url:'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=400&q=80',brand:'K&N'},
+        {name:'Busi NGK Iridium BPR6EIX',category:'Busi',price:95000,stock:120,description:'Busi iridium untuk pembakaran sempurna.',image_url:'https://images.unsplash.com/photo-1599839619722-39751411ea63?w=400&q=80',brand:'NGK'},
+        {name:'Aki Kering GS Astra MF 35Ah',category:'Aki',price:650000,stock:30,description:'Aki maintenance-free, siap pakai.',image_url:'https://images.unsplash.com/photo-1520113412548-8df0c656c072?w=400&q=80',brand:'GS Astra'},
+        {name:'Sarung Jok Kulit Premium MBtech',category:'Aksesoris',price:1200000,stock:15,description:'Sarung pelapis jok mobil bahan kulit sintetis.',image_url:'https://images.unsplash.com/photo-1605810730456-bc9b0e515fa0?w=400&q=80',brand:'MBtech'},
+        {name:'Lampu LED Headlight H4 Philips 6000K',category:'Lampu',price:450000,stock:30,description:'Lampu utama LED mobil putih bersih.',image_url:'https://images.unsplash.com/photo-1625047509168-a71c673980b1?w=400&q=80',brand:'Philips'}
+      ];
+      const { error: insertErr } = await supabase.from('products').insert(P);
+      if (insertErr) console.error("⚠️ Error Input Produk:", insertErr);
+      else console.log("✅ Produk bawaan berhasil ditambahkan!");
+    }
+  } catch (e) {
+    console.error("⚠️ Fatal Error di initDb:", e);
   }
 }
 initDb();
 
-// AUTH ROUTES
-app.post('/api/register', async (req, res) => {
-  const { name, email, password, vehicle_type } = req.body;
-  if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
-  
-  const { data: existing } = await supabase.from('users').select('id').eq('email', email).single();
-  if (existing) return res.status(400).json({ error: 'Email sudah terdaftar' });
-  
-  try {
-    const hash = bcrypt.hashSync(password, 10);
-    const { data: u, error } = await supabase.from('users').insert([{ name, email, password: hash, vehicle_type }]).select().single();
-    if (error) throw error;
-    
-    const token = jwt.sign({ id: u.id, email, role: 'pelanggan', name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: u.id, name, email, role: 'pelanggan' } });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
-  const { data: u } = await supabase.from('users').select('*').eq('email', email).single();
-  
-  if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' });
-  
-  const token = jwt.sign({ id: u.id, email: u.email, role: u.role, name: u.name }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user: { id: u.id, name: u.name, email: u.email, role: u.role } });
-});
-
-app.get('/api/me', authMiddleware, async (req, res) => {
-  const { data } = await supabase.from('users').select('id,name,email,role,vehicle_type').eq('id', req.user.id).single();
-  res.json(data);
-});
-
 // PRODUCTS ROUTES
 app.get('/api/products', async (req, res) => {
-  const { search, category } = req.query;
-  let query = supabase.from('products').select('*').order('created_at', { ascending: false });
-  
-  if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
-  if (category) query = query.eq('category', category);
-  
-  const { data } = await query;
-  res.json(data);
+  try {
+    const { search, category } = req.query;
+    let query = supabase.from('products').select('*').order('created_at', { ascending: false });
+    
+    if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+    if (category) query = query.eq('category', category);
+    
+    const { data, error } = await query;
+    if (error) {
+      console.error("⚠️ Error Get Products:", error);
+      return res.json([]); // Kembalikan array kosong agar frontend tidak crash
+    }
+    res.json(data || []);
+  } catch (e) {
+    console.error("⚠️ Fatal Get Products:", e);
+    res.json([]);
+  }
 });
 
 app.post('/api/products', adminMiddleware, async (req, res) => {
@@ -125,6 +114,39 @@ app.put('/api/products/:id', adminMiddleware, async (req, res) => {
 app.delete('/api/products/:id', adminMiddleware, async (req, res) => {
   await supabase.from('products').delete().eq('id', req.params.id);
   res.json({ success: true });
+});
+
+// AUTH ROUTES
+app.post('/api/register', async (req, res) => {
+  const { name, email, password, vehicle_type } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ error: 'Semua field wajib diisi' });
+  
+  const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
+  if (existing) return res.status(400).json({ error: 'Email sudah terdaftar' });
+  
+  try {
+    const hash = bcrypt.hashSync(password, 10);
+    const { data: u, error } = await supabase.from('users').insert([{ name, email, password: hash, vehicle_type }]).select().single();
+    if (error) throw error;
+    
+    const token = jwt.sign({ id: u.id, email, role: 'pelanggan', name }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: u.id, name, email, role: 'pelanggan' } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  const { data: u } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
+  
+  if (!u || !bcrypt.compareSync(password, u.password)) return res.status(401).json({ error: 'Email atau password salah' });
+  
+  const token = jwt.sign({ id: u.id, email: u.email, role: u.role, name: u.name }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user: { id: u.id, name: u.name, email: u.email, role: u.role } });
+});
+
+app.get('/api/me', authMiddleware, async (req, res) => {
+  const { data } = await supabase.from('users').select('id,name,email,role,vehicle_type').eq('id', req.user.id).single();
+  res.json(data);
 });
 
 // TRANSACTIONS ROUTES
@@ -184,14 +206,14 @@ app.get('/api/transactions/all', adminMiddleware, async (req, res) => {
 app.get('/api/queues/booked-times', async (req, res) => {
   const { date } = req.query;
   const { data } = await supabase.from('queues').select('booking_time').eq('booking_date', date).neq('status', 'selesai');
-  res.json(data.map(b => b.booking_time));
+  res.json(data ? data.map(b => b.booking_time) : []);
 });
 
 app.post('/api/queues', authMiddleware, async (req, res) => {
   const q = req.body;
   if (!q.booking_date || !q.booking_time) return res.status(400).json({ error: "Tanggal dan jam servis wajib diisi." });
   
-  const { data: check } = await supabase.from('queues').select('id').eq('booking_date', q.booking_date).eq('booking_time', q.booking_time).neq('status', 'selesai').single();
+  const { data: check } = await supabase.from('queues').select('id').eq('booking_date', q.booking_date).eq('booking_time', q.booking_time).neq('status', 'selesai').maybeSingle();
   if (check) return res.status(400).json({ error: "Jadwal penuh." });
   
   const today = new Date().toISOString().split('T')[0];
@@ -204,7 +226,7 @@ app.post('/api/queues', authMiddleware, async (req, res) => {
 
 app.get('/api/queues/my', authMiddleware, async (req, res) => {
   const { data } = await supabase.from('queues').select('*').eq('user_id', req.user.id).order('created_at', { ascending: false });
-  res.json(data);
+  res.json(data || []);
 });
 
 app.get('/api/queues/all', adminMiddleware, async (req, res) => {
@@ -224,7 +246,7 @@ app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
   if (!complaint) return res.status(400).json({ error: 'Keluhan tidak boleh kosong' });
   
   const { data: products } = await supabase.from('products').select('name');
-  const productList = products.map(p => p.name).join(', ');
+  const productList = products ? products.map(p => p.name).join(', ') : '';
   const systemPrompt = `Kamu Kepala Mekanik AI Mandiri Variasi. Analisis keluhan. Beri JSON murni: {"diagnosis":"Penjelasan", "priority":"Tinggi/Sedang/Rendah", "action":"Langkah pertama", "recommended_parts":["Sparepart relevan dari: ${productList}"]}`;
   
   try {
@@ -237,21 +259,21 @@ app.post('/api/ai/diagnose', authMiddleware, async (req, res) => {
 
 app.get('/api/ai/recommendations', authMiddleware, async (req, res) => {
   const { data: history } = await supabase.from('transactions').select('products(category)').eq('user_id', req.user.id).eq('status', 'Lunas');
-  const cats = history.map(h => h.products.category);
+  const cats = history ? history.map(h => h.products.category) : [];
   const recs = [];
   
   if (!cats.includes('Oli Mesin')) recs.push({ reason: '🔧 Belum ada riwayat ganti oli.', priority: 'high' });
-  if (history.length === 0) recs.push({ reason: '👋 Selamat datang di Mandiri Variasi!', priority: 'low' });
+  if (!history || history.length === 0) recs.push({ reason: '👋 Selamat datang di Mandiri Variasi!', priority: 'low' });
   
   const { data: products } = await supabase.from('products').select('*').limit(6);
-  res.json({ recommendations: recs.slice(0, 3), products, history_count: history.length });
+  res.json({ recommendations: recs.slice(0, 3), products: products || [], history_count: history ? history.length : 0 });
 });
 
 app.get('/api/admin/stats', adminMiddleware, async (req, res) => {
   const { count: customers } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'pelanggan');
   const { count: orders } = await supabase.from('transactions').select('*', { count: 'exact', head: true }).eq('status', 'Lunas');
   const { data: txs } = await supabase.from('transactions').select('total_price').eq('status', 'Lunas');
-  const revenue = txs.reduce((sum, tx) => sum + tx.total_price, 0);
+  const revenue = txs ? txs.reduce((sum, tx) => sum + tx.total_price, 0) : 0;
   const { count: products } = await supabase.from('products').select('*', { count: 'exact', head: true });
   
   res.json({ customers: customers || 0, orders: orders || 0, revenue, products: products || 0 });
@@ -259,7 +281,7 @@ app.get('/api/admin/stats', adminMiddleware, async (req, res) => {
 
 app.get('/api/admin/users', adminMiddleware, async (req, res) => {
   const { data } = await supabase.from('users').select('id,name,email,role,vehicle_type,created_at').order('created_at', { ascending: false });
-  res.json(data);
+  res.json(data || []);
 });
 
 // STATIC PAGES
